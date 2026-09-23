@@ -4,19 +4,23 @@ import foundry.veil.Veil;
 import foundry.veil.ext.MinecraftServerExtension;
 import foundry.veil.impl.TickTaskSchedulerImpl;
 import foundry.veil.impl.command.VeilCommand;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.server.ServerStoppingEvent;
-import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.event.TickEvent;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
-@EventBusSubscriber(modid = Veil.MODID)
+@Mod.EventBusSubscriber(modid = Veil.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class VeilForgeEvents {
 
     @SubscribeEvent
-    public static void serverTick(ServerTickEvent.Pre event) {
+    public static void serverTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) {
+            return;
+        }
+
         TickTaskSchedulerImpl scheduler = ((MinecraftServerExtension) event.getServer()).veil$getScheduler();
         if (scheduler != null) {
             scheduler.run();

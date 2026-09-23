@@ -102,7 +102,7 @@ public class PipelineGameRendererMixin {
         }
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;renderItemInHand(Lnet/minecraft/client/Camera;FLorg/joml/Matrix4f;)V", shift = At.Shift.AFTER))
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/GameRenderer;renderItemInHand(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/Camera;F)V", shift = At.Shift.AFTER))
     public void unbindFirstPerson(CallbackInfo ci) {
         // Don't try to run first person processing if the hand is hidden
         if (!this.panoramicMode && (IrisCompat.INSTANCE == null || !IrisCompat.INSTANCE.areShadersLoaded())) {

@@ -1,10 +1,10 @@
 package foundry.veil.forge;
 
 import foundry.veil.Veil;
-import foundry.veil.impl.command.VeilCommand;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
@@ -13,5 +13,6 @@ public class VeilForge {
 
     public VeilForge() {
         Veil.init();
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> VeilForgeClient.init(FMLJavaModLoadingContext.get().getModEventBus()));
     }
 }

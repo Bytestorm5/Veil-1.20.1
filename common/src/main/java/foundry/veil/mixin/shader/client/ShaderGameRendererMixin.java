@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(GameRenderer.class)
 public class ShaderGameRendererMixin {
 
-    @ModifyExpressionValue(method = {"lambda$reloadShaders$56", "method_36512"}, at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Pair;getFirst()Ljava/lang/Object;"))
+    @ModifyExpressionValue(method = "lambda$reloadShaders$60", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/util/Pair;getFirst()Ljava/lang/Object;"))
     public Object getShader(Object original) {
         if (Veil.platform().hasErrors()) {
             return original;

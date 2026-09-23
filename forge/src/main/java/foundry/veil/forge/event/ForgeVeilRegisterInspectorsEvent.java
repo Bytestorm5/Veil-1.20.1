@@ -3,8 +3,8 @@ package foundry.veil.forge.event;
 import foundry.veil.api.client.editor.EditorManager;
 import foundry.veil.api.client.editor.Inspector;
 import foundry.veil.api.event.VeilRegisterInspectorsEvent;
-import net.neoforged.bus.api.Event;
-import net.neoforged.fml.event.IModBusEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.event.IModBusEvent;
 
 /**
  * Fired to register ImGui inspectors. Only called when ImGuiMC is loaded and editors are fully enabled.

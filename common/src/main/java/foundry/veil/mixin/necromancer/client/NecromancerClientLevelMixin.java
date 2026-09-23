@@ -20,7 +20,7 @@ public class NecromancerClientLevelMixin {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     @Inject(method = "addEntity", at = @At("TAIL"))
-    private void addEntity(Entity entity, CallbackInfo ci) {
+    private void addEntity(int entityId, Entity entity, CallbackInfo ci) {
         if (this.minecraft.getEntityRenderDispatcher().getRenderer(entity) instanceof NecromancerEntityRenderer renderer) {
             renderer.setupEntity(entity);
         }

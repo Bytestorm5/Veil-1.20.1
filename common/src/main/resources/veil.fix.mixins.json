@@ -9,7 +9,6 @@
     "MemUtilMixin"
   ],
   "client": [
-    "NativeImageMixin",
     "WindowMixin"
   ],
   "injectors": {

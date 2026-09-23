@@ -13,11 +13,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.common.NeoForge;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.javafmlmod.FMLModContainer;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.common.MinecraftForge;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -26,7 +28,7 @@ import java.util.Map;
 
 @SuppressWarnings({"Convert2MethodRef", "RedundantCast"})
 @ApiStatus.Internal
-public class NeoForgeVeilEventPlatform implements VeilEventPlatform {
+public class ForgeVeilEventPlatform implements VeilEventPlatform {
 
     private static final BiMap<VeilRenderLevelStageEvent.Stage, RenderLevelStageEvent.Stage> STAGE_MAPPING = HashBiMap.create(Map.ofEntries(
             Map.entry(VeilRenderLevelStageEvent.Stage.AFTER_SKY, RenderLevelStageEvent.Stage.AFTER_SKY),
@@ -44,41 +46,41 @@ public class NeoForgeVeilEventPlatform implements VeilEventPlatform {
 
     private IEventBus getModBus() {
         ModContainer container = ModLoadingContext.get().getActiveContainer();
-        if (container.getEventBus() == null) {
+        if (!(container instanceof FMLModContainer fmlContainer)) {
             throw new IllegalStateException("Veil platform events must be registered from mod constructor");
         }
-        return container.getEventBus();
+        return fmlContainer.getEventBus();
     }
 
     @Override
     public void onFreeNativeResources(FreeNativeResourcesEvent event) {
-        NeoForge.EVENT_BUS.<ForgeFreeNativeResourcesEvent>addListener(forgeEvent -> event.onFree());
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ForgeFreeNativeResourcesEvent.class, forgeEvent -> event.onFree());
     }
 
     @Override
     public void onVeilAddShaderProcessors(VeilAddShaderPreProcessorsEvent event) {
-        this.getModBus().<ForgeVeilAddShaderProcessorsEvent>addListener(forgeEvent -> event.onRegisterShaderPreProcessors(forgeEvent.getResourceProvider(), forgeEvent));
+        this.getModBus().addListener(EventPriority.NORMAL, false, ForgeVeilAddShaderProcessorsEvent.class, forgeEvent -> event.onRegisterShaderPreProcessors(forgeEvent.getResourceProvider(), forgeEvent));
     }
 
     @Override
     public void preVeilPostProcessing(VeilPostProcessingEvent.Pre event) {
-        NeoForge.EVENT_BUS.<ForgeVeilPostProcessingEvent.Pre>addListener(forgeEvent -> event.preVeilPostProcessing(forgeEvent.getName(), forgeEvent.getPipeline(), forgeEvent.getContext()));
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ForgeVeilPostProcessingEvent.Pre.class, forgeEvent -> event.preVeilPostProcessing(forgeEvent.getName(), forgeEvent.getPipeline(), forgeEvent.getContext()));
     }
 
     @Override
     public void postVeilPostProcessing(VeilPostProcessingEvent.Post event) {
-        NeoForge.EVENT_BUS.<ForgeVeilPostProcessingEvent.Post>addListener(forgeEvent -> event.postVeilPostProcessing(forgeEvent.getName(), forgeEvent.getPipeline(), forgeEvent.getContext()));
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ForgeVeilPostProcessingEvent.Post.class, forgeEvent -> event.postVeilPostProcessing(forgeEvent.getName(), forgeEvent.getPipeline(), forgeEvent.getContext()));
     }
 
     // This is needed for types to line up
     @Override
     public void onVeilRegisterBlockLayers(VeilRegisterBlockLayersEvent event) {
-        this.getModBus().<ForgeVeilRegisterBlockLayersEvent>addListener(forgeEvent -> event.onRegisterBlockLayers((VeilRegisterBlockLayersEvent.Registry) forgeEvent));
+        this.getModBus().addListener(EventPriority.NORMAL, false, ForgeVeilRegisterBlockLayersEvent.class, forgeEvent -> event.onRegisterBlockLayers((VeilRegisterBlockLayersEvent.Registry) forgeEvent));
     }
 
     @Override
     public void onVeilRegisterFixedBuffers(VeilRegisterFixedBuffersEvent event) {
-        this.getModBus().<ForgeVeilRegisterFixedBuffersEvent>addListener(forgeEvent -> event.onRegisterFixedBuffers((stage, renderType) -> {
+        this.getModBus().addListener(EventPriority.NORMAL, false, ForgeVeilRegisterFixedBuffersEvent.class, forgeEvent -> event.onRegisterFixedBuffers((stage, renderType) -> {
             if (stage == null) {
                 forgeEvent.register(null, renderType);
                 return;
@@ -93,22 +95,22 @@ public class NeoForgeVeilEventPlatform implements VeilEventPlatform {
 
     @Override
     public void onVeilRegisterGlobalControllers(VeilRegisterGlobalControllersEvent event) {
-        this.getModBus().<ForgeVeilRegisterGlobalControllersEvent>addListener(forgeEvent -> event.onRegisterGlobalControllers((VeilRegisterGlobalControllersEvent.Registry) forgeEvent));
+        this.getModBus().addListener(EventPriority.NORMAL, false, ForgeVeilRegisterGlobalControllersEvent.class, forgeEvent -> event.onRegisterGlobalControllers((VeilRegisterGlobalControllersEvent.Registry) forgeEvent));
     }
 
     @Override
     public void onVeilRegisterInspectors(VeilRegisterInspectorsEvent event) {
-        this.getModBus().<ForgeVeilRegisterInspectorsEvent>addListener(forgeEvent -> event.onRegisterInspectors((VeilRegisterInspectorsEvent.Registry) forgeEvent));
+        this.getModBus().addListener(EventPriority.NORMAL, false, ForgeVeilRegisterInspectorsEvent.class, forgeEvent -> event.onRegisterInspectors((VeilRegisterInspectorsEvent.Registry) forgeEvent));
     }
 
     @Override
     public void onVeilRendererAvailable(VeilRendererAvailableEvent event) {
-        this.getModBus().<ForgeVeilRendererAvailableEvent>addListener(forgeEvent -> event.onVeilRendererAvailable(forgeEvent.getRenderer()));
+        this.getModBus().addListener(EventPriority.NORMAL, false, ForgeVeilRendererAvailableEvent.class, forgeEvent -> event.onVeilRendererAvailable(forgeEvent.getRenderer()));
     }
 
     @Override
     public void onVeilRenderLevelStage(VeilRenderLevelStageEvent event) {
-        NeoForge.EVENT_BUS.<RenderLevelStageEvent>addListener(forgeEvent -> {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RenderLevelStageEvent.class, forgeEvent -> {
             VeilRenderLevelStageEvent.Stage stage = getVeilStage(forgeEvent.getStage());
             if (stage == null) {
                 return;
@@ -117,10 +119,10 @@ public class NeoForgeVeilEventPlatform implements VeilEventPlatform {
             LevelRenderer levelRenderer = forgeEvent.getLevelRenderer();
             MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
             MatrixStack poseStack = VeilRenderBridge.create(forgeEvent.getPoseStack());
-            Matrix4f modelViewMatrix = forgeEvent.getModelViewMatrix();
+            Matrix4f modelViewMatrix = forgeEvent.getPoseStack().last().pose();
             Matrix4f projectionMatrix = forgeEvent.getProjectionMatrix();
             int renderTick = forgeEvent.getRenderTick();
-            DeltaTracker deltaTracker = forgeEvent.getPartialTick();
+            DeltaTracker deltaTracker = DeltaTracker.of(Minecraft.getInstance().getDeltaFrameTime(), forgeEvent.getPartialTick());
             Camera camera = forgeEvent.getCamera();
             Frustum frustum = forgeEvent.getFrustum();
             event.onRenderLevelStage(stage, levelRenderer, bufferSource, poseStack, modelViewMatrix, projectionMatrix, renderTick, deltaTracker, camera, frustum);
@@ -129,12 +131,12 @@ public class NeoForgeVeilEventPlatform implements VeilEventPlatform {
 
     @Override
     public void onVeilShaderCompile(VeilShaderCompileEvent event) {
-        this.getModBus().<ForgeVeilShaderCompileEvent>addListener(forgeEvent -> event.onVeilCompileShaders(forgeEvent.getShaderManager(), forgeEvent.getUpdatedPrograms()));
+        this.getModBus().addListener(EventPriority.NORMAL, false, ForgeVeilShaderCompileEvent.class, forgeEvent -> event.onVeilCompileShaders(forgeEvent.getShaderManager(), forgeEvent.getUpdatedPrograms()));
     }
 
     @Override
     public void onVeilDynamicBuffersChanged(VeilDynamicBuffersChangedEvent event) {
-        this.getModBus().<ForgeVeilDynamicBuffersChangedEvent>addListener(forgeEvent -> event.onVeilDynamicBuffersChanged(forgeEvent.getChange()));
+        this.getModBus().addListener(EventPriority.NORMAL, false, ForgeVeilDynamicBuffersChangedEvent.class, forgeEvent -> event.onVeilDynamicBuffersChanged(forgeEvent.getChange()));
     }
 
     public static @Nullable RenderLevelStageEvent.Stage getForgeStage(VeilRenderLevelStageEvent.Stage stage) {

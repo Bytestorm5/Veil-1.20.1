@@ -1,8 +1,8 @@
 package foundry.veil.forge.event;
 
 import foundry.veil.api.client.render.dynamicbuffer.DynamicBuffersChange;
-import net.neoforged.bus.api.Event;
-import net.neoforged.fml.event.IModBusEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.event.IModBusEvent;
 
 /**
  * Fired when the set of currently active Veil dynamic buffers has changed.

@@ -3,8 +3,8 @@ package foundry.veil.forge.event;
 import foundry.veil.api.event.VeilRegisterGlobalControllersEvent;
 import foundry.veil.api.flare.modifier.ControllerManager;
 import foundry.veil.api.flare.modifier.GlobalController;
-import net.neoforged.bus.api.Event;
-import net.neoforged.fml.event.IModBusEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.event.IModBusEvent;
 
 /**
  * Fired to register global controllers to be used when rendering Flare effects.

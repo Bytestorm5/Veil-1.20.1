@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 @Mixin(LevelRenderer.class)
 public abstract class DebugLevelRendererMixin {
 
-    @Redirect(method = "renderSectionLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/util/function/Supplier;)V"))
+    @Redirect(method = "renderChunkLayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/util/function/Supplier;)V"))
     private void fixBlockProfilerName(ProfilerFiller instance, Supplier<String> stringSupplier, @Local(argsOnly = true) RenderType renderType) {
         instance.popPush("render_" + VeilRenderType.getName(renderType));
     }

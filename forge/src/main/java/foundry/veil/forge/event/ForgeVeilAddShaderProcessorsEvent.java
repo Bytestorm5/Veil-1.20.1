@@ -3,8 +3,8 @@ package foundry.veil.forge.event;
 import foundry.veil.api.client.render.shader.processor.ShaderPreProcessor;
 import foundry.veil.api.event.VeilAddShaderPreProcessorsEvent;
 import net.minecraft.server.packs.resources.ResourceProvider;
-import net.neoforged.bus.api.Event;
-import net.neoforged.fml.event.IModBusEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.fml.event.IModBusEvent;
 
 /**
  * Fired when Minecraft frees all native resources on the client.

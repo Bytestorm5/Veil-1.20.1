@@ -36,7 +36,7 @@ public class GameRendererMixin {
         VeilRenderProfiler.get().push("hud", RenderProfilerCounter.STANDARD_GEOMETRY);
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/client/DeltaTracker;)V", shift = At.Shift.AFTER))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;render(Lnet/minecraft/client/gui/GuiGraphics;F)V", shift = At.Shift.AFTER))
     public void postRenderGui(CallbackInfo ci) {
         VeilRenderProfiler.get().pop();
     }

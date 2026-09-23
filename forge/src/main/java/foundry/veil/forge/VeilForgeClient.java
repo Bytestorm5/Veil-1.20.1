@@ -10,20 +10,17 @@ import foundry.veil.impl.VeilReloadListeners;
 import foundry.veil.impl.client.imgui.VeilImGuiCompat;
 import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModLoader;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.RegisterShadersEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoader;
+import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RegisterShadersEvent;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
-@Mod(value = Veil.MODID, dist = Dist.CLIENT)
 public class VeilForgeClient {
 
-    public VeilForgeClient(IEventBus modEventBus) {
+    public static void init(IEventBus modEventBus) {
         VeilClient.init();
 
         modEventBus.addListener(VeilForgeClient::registerKeys);
@@ -34,8 +31,8 @@ public class VeilForgeClient {
     private static void registerListeners(RegisterClientReloadListenersEvent event) {
         VeilRenderSystem.init();
         VeilReloadListeners.registerListeners((type, id, listener) -> event.registerReloadListener(listener));
-        ModLoader.postEvent(new ForgeVeilRendererAvailableEvent(VeilRenderSystem.renderer()));
-        ModLoader.postEvent(new ForgeVeilRegisterFixedBuffersEvent(ForgeRenderTypeStageHandler::register));
+        ModLoader.get().postEvent(new ForgeVeilRendererAvailableEvent(VeilRenderSystem.renderer()));
+        ModLoader.get().postEvent(new ForgeVeilRegisterFixedBuffersEvent(ForgeRenderTypeStageHandler::register));
     }
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {

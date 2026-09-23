@@ -6,11 +6,13 @@
   "compatibilityLevel": "JAVA_17",
   "plugin": "foundry.veil.VeilMixinPluginImpl",
   "mixins": [
-    "DeferredRegisterMixin",
-    "RegistriesMixin",
-    "resources.PathPackResourcesMixin"
+    "resources.PathPackResourcesMixin",
+    "RegistryDataLoaderMixin",
+    "resources.DelegatingPackResourcesMixin",
+    "resources.ForgePathPackResourcesMixin"
   ],
   "client": [
+    "client.ForgeRenderTypeAccessor",
     "client.MinecraftMixin",
     "client.RenderBuffersMixin",
     "client.RenderTypeMixin",

@@ -23,13 +23,13 @@ import net.minecraft.commands.arguments.coordinates.WorldCoordinates;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Locale;
@@ -37,7 +37,7 @@ import java.util.Locale;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 
 @ApiStatus.Internal
-@EventBusSubscriber(modid = Veil.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = Veil.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class VeilForgeClientEvents {
 
     @SubscribeEvent
@@ -122,8 +122,10 @@ public class VeilForgeClientEvents {
     }
 
     @SubscribeEvent
-    public static void clientTick(ClientTickEvent.Pre event) {
-        VeilClientSchedulerImpl.tick();
+    public static void clientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            VeilClientSchedulerImpl.tick();
+        }
     }
 
     @SubscribeEvent

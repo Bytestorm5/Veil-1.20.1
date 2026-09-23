@@ -58,20 +58,6 @@ jar {
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
-repositories {
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Modrinth"
-                url = "https://api.modrinth.com/maven"
-            }
-        }
-        filter {
-            includeGroup "maven.modrinth"
-        }
-    }
-}
-
 dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 

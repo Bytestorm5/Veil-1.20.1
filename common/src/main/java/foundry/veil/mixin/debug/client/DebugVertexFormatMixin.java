@@ -1,5 +1,7 @@
 package foundry.veil.mixin.debug.client;
 
+import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import foundry.veil.ext.DebugVertexBufferExt;
@@ -22,7 +24,7 @@ public class DebugVertexFormatMixin {
 
     @Shadow
     @Final
-    private List<String> names;
+    private ImmutableMap<String, VertexFormatElement> elementMapping;
 
     @Shadow
     @Nullable
@@ -30,6 +32,6 @@ public class DebugVertexFormatMixin {
 
     @Inject(method = "getImmediateDrawVertexBuffer", at = @At(value = "FIELD", target = "Lcom/mojang/blaze3d/vertex/VertexFormat;immediateDrawVertexBuffer:Lcom/mojang/blaze3d/vertex/VertexBuffer;", opcode = 181, shift = At.Shift.AFTER))
     public void nameImmediateDrawVertexBuffer(CallbackInfoReturnable<VertexBuffer> cir) {
-        ((DebugVertexBufferExt) this.immediateDrawVertexBuffer).veil$setName("Vertex Format (" + this.vertexSize + " bytes): " + String.join(" ", this.names));
+        ((DebugVertexBufferExt) this.immediateDrawVertexBuffer).veil$setName("Vertex Format (" + this.vertexSize + " bytes): " + String.join(" ", this.elementMapping.keySet()));
     }
 }

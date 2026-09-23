@@ -1,5 +1,7 @@
 package foundry.veil.backport.client;
 
+import net.minecraft.client.Minecraft;
+
 /**
  * Backport of {@code net.minecraft.client.DeltaTracker}.
  * <p>
@@ -36,6 +38,16 @@ public interface DeltaTracker {
      */
     static DeltaTracker of(float deltaTicks, float partialTick) {
         return new Snapshot(deltaTicks, partialTick);
+    }
+
+    /**
+     * Equivalent of 1.21's {@code Minecraft#getTimer()}. Only call this on the client.
+     *
+     * @return A delta tracker for the frame currently being rendered
+     */
+    static DeltaTracker current() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return new Snapshot(minecraft.getDeltaFrameTime(), minecraft.getFrameTime());
     }
 
     record DefaultValue(float value) implements DeltaTracker {

@@ -1,14 +1,13 @@
 package foundry.veil.forge.impl;
 
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
-import com.electronwill.nightconfig.core.concurrent.ConcurrentConfig;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.mojang.datafixers.util.Pair;
 import cpw.mods.niofs.union.UnionFileSystem;
 import foundry.veil.Veil;
-import net.neoforged.fml.loading.moddiscovery.NightConfigWrapper;
-import net.neoforged.neoforgespi.language.IConfigurable;
+import net.minecraftforge.fml.loading.moddiscovery.NightConfigWrapper;
+import net.minecraftforge.forgespi.language.IConfigurable;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +26,7 @@ public final class ForgePackHooks {
             return null;
         }
 
-        Path file = path.resolve("META-INF").resolve("neoforge.mods.toml");
+        Path file = path.resolve("META-INF").resolve("mods.toml");
         if (!Files.isRegularFile(file)) {
             return null;
         }
@@ -44,7 +43,7 @@ public final class ForgePackHooks {
                 return null;
             }
 
-            IConfigurable mod = mods.getFirst();
+            IConfigurable mod = mods.get(0);
             String logoFile = mod.<String>getConfigElement("logoFile").orElse(null);
             boolean logoBlur = mod.<Boolean>getConfigElement("logoBlur").orElse(true);
             return logoFile != null ? Pair.of(logoFile, logoBlur) : null;
@@ -54,7 +53,7 @@ public final class ForgePackHooks {
         }
     }
 
-    private static UnmodifiableConfig copyConfig(ConcurrentConfig config) {
+    private static UnmodifiableConfig copyConfig(UnmodifiableConfig config) {
         TomlFormat format = TomlFormat.instance();
         return format.createParser().parse(format.createWriter().writeToString(config)).unmodifiable();
     }
