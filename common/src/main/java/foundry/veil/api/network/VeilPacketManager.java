@@ -4,12 +4,12 @@ import foundry.veil.api.network.handler.ClientPacketContext;
 import foundry.veil.api.network.handler.PacketContext;
 import foundry.veil.api.network.handler.ServerPacketContext;
 import foundry.veil.impl.network.ClientPacketSink;
+import foundry.veil.impl.network.VeilPayloadRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
+import foundry.veil.backport.network.RegistryFriendlyByteBuf;
+import foundry.veil.backport.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import foundry.veil.backport.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBundlePacket;
 import net.minecraft.server.MinecraftServer;
@@ -42,7 +42,7 @@ public interface VeilPacketManager {
      * Creates a {@link VeilPacketManager}.
      *
      * @param modId   The id of the mod creating the channel
-     * @param version The NeoForge channel version
+     * @param version The network channel version
      * @return The packet manager
      */
     static VeilPacketManager create(String modId, String version) {
@@ -265,13 +265,13 @@ public interface VeilPacketManager {
                 return;
             }
             if (payloads.length == 1) {
-                this.sendPacket(new ClientboundCustomPayloadPacket(payloads[0]));
+                this.sendPacket(VeilPayloadRegistry.toClientbound(payloads[0]));
                 return;
             }
 
-            List<Packet<? super ClientGamePacketListener>> packets = new ArrayList<>();
+            List<Packet<ClientGamePacketListener>> packets = new ArrayList<>();
             for (CustomPacketPayload payload : payloads) {
-                packets.add(new ClientboundCustomPayloadPacket(payload));
+                packets.add(VeilPayloadRegistry.toClientbound(payload));
             }
             this.sendPacket(new ClientboundBundlePacket(packets));
         }
@@ -296,7 +296,7 @@ public interface VeilPacketManager {
          * Creates a {@link VeilPacketManager}.
          *
          * @param modId   The id of the mod to register the channel under
-         * @param version The NeoForge channel version
+         * @param version The network channel version
          * @return The packet manager
          */
         VeilPacketManager create(String modId, String version);

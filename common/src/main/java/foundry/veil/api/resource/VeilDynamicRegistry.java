@@ -1,10 +1,12 @@
 package foundry.veil.api.resource;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
 import foundry.veil.mixin.registry.accessor.RegistryDataAccessor;
 import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
@@ -42,19 +44,21 @@ public class VeilDynamicRegistry {
      * @param executor        The executor to load all registries on
      * @return All loaded registries and their errors
      */
-    @SuppressWarnings("RedundantOperationOnEmptyContainer")
     public static CompletableFuture<Data> loadRegistries(ResourceManager resourceManager, Collection<RegistryDataLoader.RegistryData<?>> registries, Executor executor) {
         Map<ResourceKey<?>, Exception> errors = new ConcurrentHashMap<>();
-        List<RegistryDataLoader.Loader<?>> loaders = registries.stream()
-                .<RegistryDataLoader.Loader<?>>map(data -> ((RegistryDataAccessor) (Object) data).invokeCreate(Lifecycle.stable(), errors))
+        List<Pair<WritableRegistry<?>, RegistryDataLoader.Loader>> loaders = registries.stream()
+                .map(data -> ((RegistryDataAccessor) (Object) data).invokeCreate(Lifecycle.stable(), errors))
                 .toList();
         RegistryOps.RegistryInfoLookup ctx = RegistryDataLoader.createContext(RegistryAccess.EMPTY, loaders);
-        return Util.sequence(loaders.stream().map(loader -> CompletableFuture.supplyAsync(() -> {
+        List<CompletableFuture<Registry<?>>> futures = loaders.stream().map(loader -> CompletableFuture.<Registry<?>>supplyAsync(() -> {
             LOADING.set(true);
-            loader.loadFromResources(resourceManager, ctx);
-            LOADING.set(false);
+            try {
+                loader.getSecond().load(resourceManager, ctx);
+            } finally {
+                LOADING.set(false);
+            }
 
-            Registry<?> registry = loader.registry();
+            Registry<?> registry = loader.getFirst();
 
             try {
                 registry.freeze();
@@ -62,12 +66,9 @@ public class VeilDynamicRegistry {
                 errors.put(registry.key(), e);
             }
 
-            if (loader.data().requiredNonEmpty() && registry.size() == 0) {
-                errors.put(registry.key(), new IllegalStateException("Registry must be non-empty"));
-            }
-
             return registry;
-        }, executor)).toList()).thenApply(list -> new Data(new RegistryAccess.ImmutableRegistryAccess(list).freeze(), Collections.unmodifiableMap(errors)));
+        }, executor)).toList();
+        return Util.sequence(futures).thenApply(list -> new Data(new RegistryAccess.ImmutableRegistryAccess(list).freeze(), Collections.unmodifiableMap(errors)));
     }
 
     /**

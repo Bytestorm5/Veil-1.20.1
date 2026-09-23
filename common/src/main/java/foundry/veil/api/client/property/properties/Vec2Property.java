@@ -46,7 +46,7 @@ public class Vec2Property extends Property<Vector2f> {
                 optionalMolang.ifPresent(molang -> {
                     MolangEnvironment environment = this.getEnvironment().get();
                     if (!molang.isEmpty()) {
-                        this.overrideValue.x = environment.safeResolve(molang.getFirst());
+                        this.overrideValue.x = environment.safeResolve(molang.get(0));
                     }
                     if (molang.size() > 1) {
                         this.overrideValue.y = environment.safeResolve(molang.get(1));

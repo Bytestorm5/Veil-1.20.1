@@ -35,7 +35,7 @@ public class IntProperty extends Property<Integer> {
                 this.overrideValue = value;
                 optionalMolang.ifPresent(molang -> {
                     try {
-                        this.overrideValue = (int) this.getEnvironment().get().resolve(molang.getFirst());
+                        this.overrideValue = (int) this.getEnvironment().get().resolve(molang.get(0));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

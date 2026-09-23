@@ -1,6 +1,8 @@
 package foundry.veil.mixin.registry.accessor;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.ResourceKey;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,5 +14,5 @@ import java.util.Map;
 public interface RegistryDataAccessor {
 
     @Invoker
-    RegistryDataLoader.Loader<?> invokeCreate(Lifecycle lifecycle, Map<ResourceKey<?>, Exception> errors);
+    Pair<WritableRegistry<?>, RegistryDataLoader.Loader> invokeCreate(Lifecycle lifecycle, Map<ResourceKey<?>, Exception> errors);
 }

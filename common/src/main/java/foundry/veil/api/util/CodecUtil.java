@@ -49,26 +49,26 @@ public class CodecUtil {
             .xmap(list -> new Vector4d(list.get(0), list.get(1), list.get(2), list.get(3)),
                     vector -> List.of(vector.x(), vector.y(), vector.z(), vector.w()));
 
-    public static final Codec<Matrix3fc> MATRIX3FC_CODEC = VECTOR3FC_CODEC.listOf(3, 3)
+    public static final Codec<Matrix3fc> MATRIX3FC_CODEC = CodecUtil.listOf(VECTOR3FC_CODEC, 3, 3)
             .xmap(list -> new Matrix3f(list.get(0), list.get(1), list.get(2)),
                     matrix -> List.of(matrix.getColumn(0, new Vector3f()),
                             matrix.getColumn(1, new Vector3f()),
                             matrix.getColumn(2, new Vector3f())));
 
-    public static final Codec<Matrix4fc> MATRIX4FC_CODEC = VECTOR4FC_CODEC.listOf(3, 3)
+    public static final Codec<Matrix4fc> MATRIX4FC_CODEC = CodecUtil.listOf(VECTOR4FC_CODEC, 3, 3)
             .xmap(list -> new Matrix4f(list.get(0), list.get(1), list.get(2), list.get(3)),
                     matrix -> List.of(matrix.getColumn(0, new Vector4f()),
                             matrix.getColumn(1, new Vector4f()),
                             matrix.getColumn(2, new Vector4f()),
                             matrix.getColumn(3, new Vector4f())));
 
-    public static final Codec<Matrix3dc> MATRIX3DC_CODEC = VECTOR3DC_CODEC.listOf(3, 3)
+    public static final Codec<Matrix3dc> MATRIX3DC_CODEC = CodecUtil.listOf(VECTOR3DC_CODEC, 3, 3)
             .xmap(list -> new Matrix3d(list.get(0), list.get(1), list.get(2)),
                     matrix -> List.of(matrix.getColumn(0, new Vector3d()),
                             matrix.getColumn(1, new Vector3d()),
                             matrix.getColumn(2, new Vector3d())));
 
-    public static final Codec<Matrix4dc> MATRIX4DC_CODEC = VECTOR4DC_CODEC.listOf(3, 3)
+    public static final Codec<Matrix4dc> MATRIX4DC_CODEC = CodecUtil.listOf(VECTOR4DC_CODEC, 3, 3)
             .xmap(list -> new Matrix4d((Vector4d) list.get(0), (Vector4d) list.get(1), (Vector4d) list.get(2), (Vector4d) list.get(3)),
                     matrix -> List.of(matrix.getColumn(0, new Vector4d()),
                             matrix.getColumn(1, new Vector4d()),
@@ -105,26 +105,26 @@ public class CodecUtil {
             .xmap(list -> new Vector4d(list.get(0), list.get(1), list.get(2), list.get(3)),
                     vector -> List.of(vector.x(), vector.y(), vector.z(), vector.w()));
 
-    public static final Codec<Matrix3f> MATRIX3F_CODEC = VECTOR3FC_CODEC.listOf(3, 3)
+    public static final Codec<Matrix3f> MATRIX3F_CODEC = CodecUtil.listOf(VECTOR3FC_CODEC, 3, 3)
             .xmap(list -> new Matrix3f(list.get(0), list.get(1), list.get(2)),
                     matrix -> List.of(matrix.getColumn(0, new Vector3f()),
                             matrix.getColumn(1, new Vector3f()),
                             matrix.getColumn(2, new Vector3f())));
 
-    public static final Codec<Matrix4f> MATRIX4F_CODEC = VECTOR4FC_CODEC.listOf(3, 3)
+    public static final Codec<Matrix4f> MATRIX4F_CODEC = CodecUtil.listOf(VECTOR4FC_CODEC, 3, 3)
             .xmap(list -> new Matrix4f(list.get(0), list.get(1), list.get(2), list.get(3)),
                     matrix -> List.of(matrix.getColumn(0, new Vector4f()),
                             matrix.getColumn(1, new Vector4f()),
                             matrix.getColumn(2, new Vector4f()),
                             matrix.getColumn(3, new Vector4f())));
 
-    public static final Codec<Matrix3dc> MATRIX3D_CODEC = VECTOR3DC_CODEC.listOf(3, 3)
+    public static final Codec<Matrix3dc> MATRIX3D_CODEC = CodecUtil.listOf(VECTOR3DC_CODEC, 3, 3)
             .xmap(list -> new Matrix3d(list.get(0), list.get(1), list.get(2)),
                     matrix -> List.of(matrix.getColumn(0, new Vector3d()),
                             matrix.getColumn(1, new Vector3d()),
                             matrix.getColumn(2, new Vector3d())));
 
-    public static final Codec<Matrix4d> MATRIX4D_CODEC = VECTOR4DC_CODEC.listOf(3, 3)
+    public static final Codec<Matrix4d> MATRIX4D_CODEC = CodecUtil.listOf(VECTOR4DC_CODEC, 3, 3)
             .xmap(list -> new Matrix4d((Vector4d) list.get(0), (Vector4d) list.get(1), (Vector4d) list.get(2), (Vector4d) list.get(3)),
                     matrix -> List.of(matrix.getColumn(0, new Vector4d()),
                             matrix.getColumn(1, new Vector4d()),
@@ -142,7 +142,7 @@ public class CodecUtil {
         return Codec.either(
                         codec.flatComapMap(List::of,
                                 l -> l.size() == 1
-                                        ? DataResult.success(l.getFirst())
+                                        ? DataResult.success(l.get(0))
                                         : DataResult.error(() -> "List must have exactly one element.")),
                         ExtraCodecs.nonEmptyList(codec.listOf()))
                 .xmap(e -> e.map(Function.identity(), Function.identity()),
@@ -182,5 +182,58 @@ public class CodecUtil {
 
     public static <V, K> List<Pair<V, K>> entrySetToPairList(Set<? extends Map.Entry<? extends V, ? extends K>> entrySet) {
         return entrySet.stream().map(entry -> new Pair<V, K>(entry.getKey(), entry.getValue())).toList();
+    }
+
+    /**
+     * Equivalent of DFU 8's {@code Codec#listOf(int, int)}.
+     *
+     * @param codec   The element codec
+     * @param minSize The minimum number of elements, inclusive
+     * @param maxSize The maximum number of elements, inclusive
+     * @return A list codec that validates the list size
+     */
+    public static <T> Codec<List<T>> listOf(Codec<T> codec, int minSize, int maxSize) {
+        Function<List<T>, DataResult<List<T>>> checker = list -> {
+            int size = list.size();
+            if (size < minSize) {
+                return DataResult.error(() -> "List is too short: " + size + ", expected range [" + minSize + "-" + maxSize + "]");
+            }
+            if (size > maxSize) {
+                return DataResult.error(() -> "List is too long: " + size + ", expected range [" + minSize + "-" + maxSize + "]");
+            }
+            return DataResult.success(list);
+        };
+        return codec.listOf().flatXmap(checker, checker);
+    }
+
+    /**
+     * Equivalent of DFU 8's {@code Codec#withAlternative(Codec, Codec)}.
+     */
+    public static <T> Codec<T> withAlternative(Codec<T> primary, Codec<? extends T> alternative) {
+        return Codec.either(primary, alternative).xmap(either -> either.map(Function.identity(), Function.identity()), Either::left);
+    }
+
+    /**
+     * Equivalent of DFU 8's {@code DataResult#getOrThrow()}.
+     *
+     * @throws IllegalStateException If the result is an error
+     */
+    public static <T> T getOrThrow(DataResult<T> result) {
+        return result.getOrThrow(false, error -> {
+        });
+    }
+
+    /**
+     * Equivalent of DFU 8's {@code DataResult#isSuccess()}.
+     */
+    public static boolean isSuccess(DataResult<?> result) {
+        return result.result().isPresent();
+    }
+
+    /**
+     * Equivalent of DFU 8's {@code DataResult#isError()}.
+     */
+    public static boolean isError(DataResult<?> result) {
+        return result.error().isPresent();
     }
 }

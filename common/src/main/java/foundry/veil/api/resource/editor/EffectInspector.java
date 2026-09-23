@@ -1,5 +1,6 @@
 package foundry.veil.api.resource.editor;
 
+import foundry.veil.api.util.CodecUtil;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -119,17 +120,17 @@ public class EffectInspector implements ResourceFileEditor<FlareResource>, Effec
                 if (this.template == null) {
                     return;
                 }
-                Matrix4fStack stack = RenderSystem.getModelViewStack();
+                PoseStack stack = RenderSystem.getModelViewStack();
 
-                stack.pushMatrix();
-                stack.set(modelView);
+                stack.pushPose();
+                stack.last().pose().set(modelView);
                 RenderSystem.applyModelViewMatrix();
                 RenderSystem.backupProjectionMatrix();
                 RenderSystem.setProjectionMatrix(projMat, VertexSorting.ORTHOGRAPHIC_Z);
 
                 this.template.render(this, (MatrixStack) POSE_STACK, 0.0f, null);
 
-                stack.popMatrix();
+                stack.popPose();
                 RenderSystem.restoreProjectionMatrix();
                 RenderSystem.applyModelViewMatrix();
             });
@@ -181,7 +182,7 @@ public class EffectInspector implements ResourceFileEditor<FlareResource>, Effec
                 throw new JsonSyntaxException(result.error().get().message());
             }
 
-            this.template = result.getOrThrow();
+            this.template = CodecUtil.getOrThrow(result);
 
         } catch (Exception e) {
             LOGGER.error("Failed to load template", e);

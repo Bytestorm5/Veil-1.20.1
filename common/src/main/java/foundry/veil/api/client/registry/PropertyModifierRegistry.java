@@ -1,5 +1,6 @@
 package foundry.veil.api.client.registry;
 
+import foundry.veil.api.util.CodecUtil;
 import com.mojang.serialization.MapCodec;
 import foundry.veil.Veil;
 import foundry.veil.api.flare.data.FloatCurve;
@@ -32,15 +33,15 @@ public final class PropertyModifierRegistry {
     );
     public static final Supplier<PropertyModifierType<Vector2fc, Vec2PropertyModifier>> VEC2 = register(
             "vec2",
-            PropertyModifier.createCodec(Vec2PropertyModifier::new, Vec2PropertyModifier::getCurves, FloatCurve.CODEC.listOf(0, 2).fieldOf("curves"), 2)
+            PropertyModifier.createCodec(Vec2PropertyModifier::new, Vec2PropertyModifier::getCurves, CodecUtil.listOf(FloatCurve.CODEC, 0, 2).fieldOf("curves"), 2)
     );
     public static final Supplier<PropertyModifierType<Vector3fc, Vec3PropertyModifier>> VEC3 = register(
             "vec3",
-            PropertyModifier.createCodec(Vec3PropertyModifier::new, Vec3PropertyModifier::getCurves, FloatCurve.CODEC.listOf(0, 3).fieldOf("curves"), 3)
+            PropertyModifier.createCodec(Vec3PropertyModifier::new, Vec3PropertyModifier::getCurves, CodecUtil.listOf(FloatCurve.CODEC, 0, 3).fieldOf("curves"), 3)
     );
     public static final Supplier<PropertyModifierType<Vector4fc, Vec4PropertyModifier>> VEC4 = register(
             "vec4",
-            PropertyModifier.createCodec(Vec4PropertyModifier::new, Vec4PropertyModifier::getCurves, FloatCurve.CODEC.listOf(0, 4).fieldOf("curves"), 4)
+            PropertyModifier.createCodec(Vec4PropertyModifier::new, Vec4PropertyModifier::getCurves, CodecUtil.listOf(FloatCurve.CODEC, 0, 4).fieldOf("curves"), 4)
     );
 
     private static <T, M extends PropertyModifier<T>> Supplier<PropertyModifierType<T, M>> register(String name, MapCodec<M> codec) {

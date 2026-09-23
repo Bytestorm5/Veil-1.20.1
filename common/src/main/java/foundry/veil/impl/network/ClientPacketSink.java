@@ -4,8 +4,7 @@ import foundry.veil.api.network.VeilPacketManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import foundry.veil.backport.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.Internal
@@ -16,7 +15,7 @@ public enum ClientPacketSink implements VeilPacketManager.PacketSink {
     @Override
     public void sendPacket(CustomPacketPayload... payloads) {
         for (CustomPacketPayload payload : payloads) {
-            this.sendPacket(new ServerboundCustomPayloadPacket(payload));
+            this.sendPacket(VeilPayloadRegistry.toServerbound(payload));
         }
     }
 

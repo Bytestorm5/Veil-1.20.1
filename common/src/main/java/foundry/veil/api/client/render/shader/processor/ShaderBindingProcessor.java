@@ -42,8 +42,8 @@ public class ShaderBindingProcessor implements ShaderPreProcessor {
             ListIterator<GlslTypeQualifier> qualifierIterator = type.getQualifiers().listIterator();
             while (qualifierIterator.hasNext()) {
                 GlslTypeQualifier qualifier = qualifierIterator.next();
-                if (qualifier instanceof GlslTypeQualifier.Layout(List<GlslTypeQualifier.LayoutId> list)) {
-                    List<GlslTypeQualifier.LayoutId> layoutIds = new ArrayList<>(list);
+                if (qualifier instanceof GlslTypeQualifier.Layout layout) {
+                    List<GlslTypeQualifier.LayoutId> layoutIds = new ArrayList<>(layout.layoutIds());
                     Iterator<GlslTypeQualifier.LayoutId> layoutIdIterator = layoutIds.iterator();
                     while (layoutIdIterator.hasNext()) {
                         GlslTypeQualifier.LayoutId layoutId = layoutIdIterator.next();
@@ -62,7 +62,7 @@ public class ShaderBindingProcessor implements ShaderPreProcessor {
                         }
                     }
 
-                    if (layoutIds.size() != list.size()) {
+                    if (layoutIds.size() != layout.layoutIds().size()) {
                         if (layoutIds.isEmpty()) {
                             qualifierIterator.remove();
                         } else {

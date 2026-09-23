@@ -16,7 +16,7 @@ public final class VeilVanillaShaders {
     private static ShaderInstance worldborder;
 
     public static void registerShaders(Context context) throws IOException {
-        context.register(ResourceLocation.withDefaultNamespace("worldborder"), DefaultVertexFormat.POSITION_TEX, value -> worldborder = value);
+        context.register(new ResourceLocation("worldborder"), DefaultVertexFormat.POSITION_TEX, value -> worldborder = value);
     }
 
     public static @Nullable ShaderInstance getWorldborder() {

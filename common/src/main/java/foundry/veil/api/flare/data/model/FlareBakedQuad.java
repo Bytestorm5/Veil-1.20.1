@@ -23,12 +23,13 @@ public class FlareBakedQuad {
         
         for (int i = 0; i < 4; i++) {
             int j = i * 8;
-            buffer.addVertex(vertexData[j], vertexData[j + 1], vertexData[j + 2])
-                    .setNormal(vertexData[j + 3], vertexData[j + 4], vertexData[j + 5])
-                    .setUv(vertexData[j + 6], vertexData[j + 7])
-                    .setColor(red, green, blue, alpha)
-                    .setLight(packedLight)
-                    .setOverlay(packedOverlay);
+            buffer.vertex(vertexData[j], vertexData[j + 1], vertexData[j + 2])
+                    .color(red, green, blue, alpha)
+                    .uv(vertexData[j + 6], vertexData[j + 7])
+                    .overlayCoords(packedOverlay)
+                    .uv2(packedLight)
+                    .normal(vertexData[j + 3], vertexData[j + 4], vertexData[j + 5])
+                    .endVertex();
             
         }
     }
@@ -38,12 +39,13 @@ public class FlareBakedQuad {
         
         for (int i = 0; i < 4; i++) {
             int j = i * 8;
-            buffer.addVertex(vertexData[j], vertexData[j + 1], vertexData[j + 2])
-                    .setNormal(vertexData[j + 3], vertexData[j + 4], vertexData[j + 5])
-                    .setUv(vertexData[j + 6], vertexData[j + 7])
-                    .setColor(red, green, blue, alpha)
-                    .setLight(lightmap[i])
-                    .setOverlay(packedOverlay);
+            buffer.vertex(vertexData[j], vertexData[j + 1], vertexData[j + 2])
+                    .color(red, green, blue, alpha)
+                    .uv(vertexData[j + 6], vertexData[j + 7])
+                    .overlayCoords(packedOverlay)
+                    .uv2(lightmap[i])
+                    .normal(vertexData[j + 3], vertexData[j + 4], vertexData[j + 5])
+                    .endVertex();
         }
     }
     

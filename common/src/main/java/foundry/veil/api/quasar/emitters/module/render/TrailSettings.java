@@ -176,7 +176,7 @@ public class TrailSettings implements EditorAttributeProvider {
             }
 
             try {
-                this.trailTexture = ResourceLocation.parse(trailTextureString.get());
+                this.trailTexture = new ResourceLocation(trailTextureString.get());
             } catch (Exception ignored) {
 
             }

@@ -30,7 +30,7 @@ public class BoolProperty extends Property<Boolean> {
         if (mode == PropertyModifier.PropertyModifierMode.MOLANG) {
             optionalMolang.ifPresent(molang -> {
                 try {
-                    this.overrideValue = this.getEnvironment().get().resolve(molang.getFirst()) >= 0;
+                    this.overrideValue = this.getEnvironment().get().resolve(molang.get(0)) >= 0;
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

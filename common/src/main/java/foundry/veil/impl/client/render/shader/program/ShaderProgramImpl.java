@@ -1,5 +1,7 @@
 package foundry.veil.impl.client.render.shader.program;
 
+import com.google.common.collect.ImmutableMap;
+import foundry.veil.impl.client.render.BackportRenderHelper;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -42,7 +44,6 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
@@ -284,7 +285,7 @@ public class ShaderProgramImpl implements ShaderProgram {
 
     @Override
     public void setDefaultUniforms(VertexFormat.Mode mode, Matrix4fc modelViewMatrix, Matrix4fc projectionMatrix) {
-        this.wrapper.get().setDefaultUniforms(mode, MODEL_VIEW_MATRIX.set(modelViewMatrix), PROJECTION_MATRIX.set(projectionMatrix), Minecraft.getInstance().getWindow());
+        BackportRenderHelper.setDefaultUniforms(this.wrapper.get(), mode, MODEL_VIEW_MATRIX.set(modelViewMatrix), PROJECTION_MATRIX.set(projectionMatrix), Minecraft.getInstance().getWindow());
     }
 
     public void freeInternal() {
@@ -497,7 +498,7 @@ public class ShaderProgramImpl implements ShaderProgram {
                 }
 
                 for (int i = 0; i < elements.size(); i++) {
-                    if (!format.getElementName(elements.get(i)).equals(names.get(i))) {
+                    if (!Objects.equals(BackportRenderHelper.getElementName(format, elements.get(i)), names.get(i))) {
                         break;
                     }
                     foundElements++;
@@ -602,11 +603,6 @@ public class ShaderProgramImpl implements ShaderProgram {
         public @NotNull String sourcePackId() {
             return "dummy";
         }
-
-        @Override
-        public @NotNull Optional<KnownPack> knownPackInfo() {
-            return Optional.empty();
-        }
     }
 
     /**
@@ -615,7 +611,7 @@ public class ShaderProgramImpl implements ShaderProgram {
     public static class Wrapper extends ShaderInstance {
 
         private static final Resource RESOURCE = new DummyShaderResource();
-        private static final VertexFormat DUMMY_FORMAT = VertexFormat.builder().build();
+        private static final VertexFormat DUMMY_FORMAT = new VertexFormat(ImmutableMap.of());
 
         public static ShaderProgram constructingProgram = null;
 
@@ -661,22 +657,17 @@ public class ShaderProgramImpl implements ShaderProgram {
         @Override
         public void setSampler(@NotNull String name, Object value) {
             int target, textureId;
-            switch (value) {
-                case RenderTarget renderTarget -> {
-                    target = GL_TEXTURE_2D;
-                    textureId = renderTarget.getColorTextureId();
-                }
-                case AbstractTexture texture -> {
-                    target = ((AbstractTextureExtension) texture).getTextureTarget();
-                    textureId = texture.getId();
-                }
-                case Integer id -> {
-                    target = GL_TEXTURE_2D;
-                    textureId = id;
-                }
-                default -> {
-                    return;
-                }
+            if (value instanceof RenderTarget renderTarget) {
+                target = GL_TEXTURE_2D;
+                textureId = renderTarget.getColorTextureId();
+            } else if (value instanceof AbstractTexture texture) {
+                target = ((AbstractTextureExtension) texture).getTextureTarget();
+                textureId = texture.getId();
+            } else if (value instanceof Integer id) {
+                target = GL_TEXTURE_2D;
+                textureId = id;
+            } else {
+                return;
             }
 
             if (textureId == 0) {

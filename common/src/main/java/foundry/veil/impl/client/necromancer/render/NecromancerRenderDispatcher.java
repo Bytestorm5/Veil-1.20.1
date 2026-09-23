@@ -2,8 +2,8 @@ package foundry.veil.impl.client.necromancer.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.systems.RenderSystem;
+import foundry.veil.backport.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import foundry.veil.api.client.necromancer.Skeleton;
 import foundry.veil.api.client.necromancer.render.NecromancerRenderer;
@@ -198,7 +198,7 @@ public class NecromancerRenderDispatcher {
 
     public static class Batched extends RendererImpl {
 
-        private final List<ByteBufferBuilder> bufferBuilderList;
+        private final List<BufferBuilder> bufferBuilderList;
         private final Int2ObjectMap<SkeletonBatch> skeletonBatches;
         private final Map<RenderType, BufferBuilder> buffers;
 
@@ -224,12 +224,12 @@ public class NecromancerRenderDispatcher {
             }
 
             if (this.bufferIndex >= this.bufferBuilderList.size()) {
-                ByteBufferBuilder builder = new ByteBufferBuilder(renderType.bufferSize());
-                this.bufferBuilderList.add(builder);
-                buffer = new BufferBuilder(builder, renderType.mode(), renderType.format());
+                buffer = new BufferBuilder(renderType.bufferSize());
+                this.bufferBuilderList.add(buffer);
             } else {
-                buffer = new BufferBuilder(this.bufferBuilderList.get(this.bufferIndex), renderType.mode(), renderType.format());
+                buffer = this.bufferBuilderList.get(this.bufferIndex);
             }
+            buffer.begin(renderType.mode(), renderType.format());
 
             this.bufferIndex++;
             this.buffers.put(renderType, buffer);
@@ -251,17 +251,13 @@ public class NecromancerRenderDispatcher {
             this.skeletonBatches.clear();
 
             for (Map.Entry<RenderType, BufferBuilder> entry : this.buffers.entrySet()) {
-                try (MeshData data = entry.getValue().build()) {
-                    if (data != null) {
-                        entry.getKey().draw(data);
-                    }
-                }
+                entry.getKey().end(entry.getValue(), RenderSystem.getVertexSorting());
             }
             this.buffers.clear();
 
-            ListIterator<ByteBufferBuilder> iterator = this.bufferBuilderList.listIterator(this.bufferIndex);
+            ListIterator<BufferBuilder> iterator = this.bufferBuilderList.listIterator(this.bufferIndex);
             while (iterator.hasNext()) {
-                iterator.next().close();
+                iterator.next();
                 iterator.remove();
             }
         }

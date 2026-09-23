@@ -6,7 +6,7 @@ import foundry.veil.api.client.render.rendertype.VeilRenderTypeBuilder;
 
 public interface RenderTypeLayer {
 
-    Codec<RenderTypeLayer> CODEC = RenderTypeLayerRegistry.REGISTRY.byNameCodec().dispatch(RenderTypeLayer::getType, RenderTypeLayerRegistry.LayerType::codec);
+    Codec<RenderTypeLayer> CODEC = RenderTypeLayerRegistry.REGISTRY.byNameCodec().dispatch(RenderTypeLayer::getType, type -> type.codec().codec());
 
     void addShard(VeilRenderTypeBuilder builder, Object... params);
 

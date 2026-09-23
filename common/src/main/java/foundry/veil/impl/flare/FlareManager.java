@@ -29,8 +29,8 @@ public class FlareManager {
     public static final ResourceKey<Registry<FlareModule>> EFFECT_MODULES = createRegistryKey("flare/modules");
 
     private static final List<RegistryDataLoader.RegistryData<?>> REGISTRIES = List.of(
-            new RegistryDataLoader.RegistryData<>(EFFECT_TEMPLATES, FlareEffectTemplate.CODEC, false),
-            new RegistryDataLoader.RegistryData<>(EFFECT_MODULES, FlareModule.CODEC, false)
+            new RegistryDataLoader.RegistryData<>(EFFECT_TEMPLATES, FlareEffectTemplate.CODEC),
+            new RegistryDataLoader.RegistryData<>(EFFECT_MODULES, FlareModule.CODEC)
     );
     private static RegistryAccess registryAccess = RegistryAccess.EMPTY;
 

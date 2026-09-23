@@ -2,8 +2,8 @@ package foundry.veil.impl.network;
 
 import foundry.veil.Veil;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import foundry.veil.backport.network.codec.StreamCodec;
+import foundry.veil.backport.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
 public enum ClientboundClearPostProcessingPacket implements CustomPacketPayload {

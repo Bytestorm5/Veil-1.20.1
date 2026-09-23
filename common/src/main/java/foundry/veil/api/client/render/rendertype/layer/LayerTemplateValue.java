@@ -29,7 +29,7 @@ public sealed interface LayerTemplateValue<T> {
     Codec<LayerTemplateValue<ResourceLocation>> LOCATION_CODEC = Codec.STRING
             .flatXmap(name -> {
                 if (name.contains("%")) {
-                    return DataResult.success(new FormattedValue<>(name, ResourceLocation::parse));
+                    return DataResult.success(new FormattedValue<>(name, ResourceLocation::new));
                 }
                 return ResourceLocation.read(name).map(loc -> new RawValue<>(loc.toString(), loc));
             }, value -> DataResult.success(value.rawValue()));

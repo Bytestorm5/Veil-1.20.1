@@ -4,12 +4,12 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.ViewArea;
-import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ChunkTrackingView;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.phys.Vec3;
@@ -30,10 +30,10 @@ public class VeilSectionOcclusionGraph {
     private ViewArea viewArea;
     private int viewDistance;
 
-    public void update(ViewArea viewArea, boolean smartCull, LevelPerspectiveCamera camera, Frustum frustum, List<SectionRenderDispatcher.RenderSection> sections) {
+    public void update(ViewArea viewArea, boolean smartCull, LevelPerspectiveCamera camera, Frustum frustum, List<ChunkRenderDispatcher.RenderChunk> sections) {
         this.viewArea = viewArea;
-        this.viewDistance = Math.min(viewArea.getViewDistance(), Mth.ceil(camera.getRenderDistance()));
-        GraphStorage graphState = new GraphStorage(viewArea.sections.length);
+        this.viewDistance = Math.min(Minecraft.getInstance().options.getEffectiveRenderDistance(), Mth.ceil(camera.getRenderDistance()));
+        GraphStorage graphState = new GraphStorage(viewArea.chunks.length);
         this.initializeQueueForFullUpdate(camera, viewArea);
         this.nodeQueue.forEach(node -> graphState.sectionToNodeMap.put(node.section, node));
         this.runUpdates(graphState, viewArea, camera.getPosition(), frustum, this.nodeQueue, smartCull, sections);
@@ -47,14 +47,14 @@ public class VeilSectionOcclusionGraph {
         this.nodeQueue.clear();
 
         BlockPos pos = camera.getBlockPosition();
-        SectionRenderDispatcher.RenderSection renderSection = viewArea.getRenderSectionAt(pos);
+        ChunkRenderDispatcher.RenderChunk renderSection = viewArea.getRenderChunkAt(pos);
         if (renderSection != null) {
             this.nodeQueue.add(new Node(renderSection, 0));
             return;
         }
 
         Vec3 cameraPos = camera.getPosition();
-        LevelHeightAccessor level = viewArea.getLevelHeightAccessor();
+        LevelHeightAccessor level = Objects.requireNonNull(Minecraft.getInstance().level);
         boolean aboveVoid = pos.getY() > level.getMinBuildHeight();
         int startY = aboveVoid ? level.getMaxBuildHeight() - 8 : level.getMinBuildHeight() + 8;
         int startX = Mth.floor(cameraPos.x / 16.0) << SectionPos.SECTION_BITS;
@@ -65,7 +65,7 @@ public class VeilSectionOcclusionGraph {
         BlockPos.MutableBlockPos renderSectionPos = new BlockPos.MutableBlockPos();
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
-                SectionRenderDispatcher.RenderSection section = viewArea.getRenderSectionAt(renderSectionPos.set(startX + x << SectionPos.SECTION_BITS + 8, startY, startZ + z << SectionPos.SECTION_BITS + 8));
+                ChunkRenderDispatcher.RenderChunk section = viewArea.getRenderChunkAt(renderSectionPos.set(startX + x << SectionPos.SECTION_BITS + 8, startY, startZ + z << SectionPos.SECTION_BITS + 8));
                 if (section != null && this.isInViewDistance(pos, section.getOrigin())) {
                     Direction direction = aboveVoid ? Direction.DOWN : Direction.UP;
                     Node node = new Node(section, 0);
@@ -103,7 +103,7 @@ public class VeilSectionOcclusionGraph {
             Frustum frustum,
             Queue<Node> nodeQueue,
             boolean smartCull,
-            List<SectionRenderDispatcher.RenderSection> sections
+            List<ChunkRenderDispatcher.RenderChunk> sections
     ) {
         BlockPos cameraSectionPos = new BlockPos(
                 Mth.floor(cameraPosition.x / 16.0) << SectionPos.SECTION_BITS,
@@ -112,13 +112,13 @@ public class VeilSectionOcclusionGraph {
         BlockPos cameraCenter = cameraSectionPos.offset(8, 8, 8);
         BlockPos.MutableBlockPos temp = new BlockPos.MutableBlockPos();
 
-        LevelHeightAccessor level = viewArea.getLevelHeightAccessor();
+        LevelHeightAccessor level = Objects.requireNonNull(Minecraft.getInstance().level);
         int maxBuildHeight = level.getMaxBuildHeight();
         int minBuildHeight = level.getMinBuildHeight();
 
         while (!nodeQueue.isEmpty()) {
             Node node = nodeQueue.poll();
-            SectionRenderDispatcher.RenderSection renderSection = node.section;
+            ChunkRenderDispatcher.RenderChunk renderSection = node.section;
             if (frustum.isVisible(renderSection.getBoundingBox()) && graphStorage.renderSections.add(renderSection.index)) {
                 sections.add(node.section);
             }
@@ -129,7 +129,7 @@ public class VeilSectionOcclusionGraph {
                     || Math.abs(origin.getZ() - cameraSectionPos.getZ()) > MINIMUM_ADVANCED_CULLING_DISTANCE;
 
             for (Direction direction : DIRECTIONS) {
-                SectionRenderDispatcher.RenderSection section = this.getRelativeFrom(cameraSectionPos, renderSection, direction);
+                ChunkRenderDispatcher.RenderChunk section = this.getRelativeFrom(cameraSectionPos, renderSection, direction);
                 if (section == null) {
                     continue;
                 }
@@ -137,7 +137,7 @@ public class VeilSectionOcclusionGraph {
                 Direction opposite = direction.getOpposite();
                 if (!smartCull || (node.directions & (1 << opposite.ordinal())) == 0) {
                     if (smartCull && node.sourceDirections != 0) {
-                        SectionRenderDispatcher.CompiledSection compiledSection = renderSection.getCompiled();
+                        ChunkRenderDispatcher.CompiledChunk compiledSection = renderSection.getCompiledChunk();
                         boolean visible = false;
 
                         for (int i = 0; i < DIRECTIONS.length; i++) {
@@ -169,7 +169,7 @@ public class VeilSectionOcclusionGraph {
                                 break;
                             }
 
-                            SectionRenderDispatcher.RenderSection renderSection3 = viewArea.getRenderSectionAt(temp.set(Math.floor(pos.x), Math.floor(pos.y), Math.floor(pos.z)));
+                            ChunkRenderDispatcher.RenderChunk renderSection3 = viewArea.getRenderChunkAt(temp.set(Math.floor(pos.x), Math.floor(pos.y), Math.floor(pos.z)));
                             if (renderSection3 == null || graphStorage.sectionToNodeMap.get(renderSection3) == null) {
                                 visible = false;
                                 break;
@@ -205,16 +205,25 @@ public class VeilSectionOcclusionGraph {
         int centerZ = pos.getZ() >> SectionPos.SECTION_BITS;
         int x = origin.getX() >> SectionPos.SECTION_BITS;
         int z = origin.getZ() >> SectionPos.SECTION_BITS;
-        return ChunkTrackingView.isWithinDistance(centerX, centerZ, this.viewDistance, x, z, false);
+        return isWithinDistance(centerX, centerZ, this.viewDistance, x, z);
+    }
+
+    // Equivalent of 1.21's ChunkTrackingView#isWithinDistance without the outer adjacent chunks
+    private static boolean isWithinDistance(int centerX, int centerZ, int viewDistance, int x, int z) {
+        long dx = Math.max(0, Math.abs(x - centerX) - 1);
+        long dz = Math.max(0, Math.abs(z - centerZ) - 1);
+        long max = Math.max(0, Math.max(dx, dz) - 1);
+        long min = Math.min(dx, dz);
+        return min * min + max * max < (long) viewDistance * viewDistance;
     }
 
     @Nullable
-    private SectionRenderDispatcher.RenderSection getRelativeFrom(BlockPos pos, SectionRenderDispatcher.RenderSection section, Direction direction) {
+    private ChunkRenderDispatcher.RenderChunk getRelativeFrom(BlockPos pos, ChunkRenderDispatcher.RenderChunk section, Direction direction) {
         BlockPos origin = section.getRelativeOrigin(direction);
         if (!this.isInViewDistance(pos, origin)) {
             return null;
         } else {
-            return Mth.abs(pos.getY() - origin.getY()) > this.viewDistance << SectionPos.SECTION_BITS ? null : this.viewArea.getRenderSectionAt(origin);
+            return Mth.abs(pos.getY() - origin.getY()) > this.viewDistance << SectionPos.SECTION_BITS ? null : this.viewArea.getRenderChunkAt(origin);
         }
     }
 
@@ -230,12 +239,12 @@ public class VeilSectionOcclusionGraph {
 
     private static class Node {
 
-        private final SectionRenderDispatcher.RenderSection section;
+        private final ChunkRenderDispatcher.RenderChunk section;
         private int sourceDirections;
         private int directions;
         private final int step;
 
-        private Node(SectionRenderDispatcher.RenderSection section, int step) {
+        private Node(ChunkRenderDispatcher.RenderChunk section, int step) {
             this.section = section;
             this.step = step;
         }
@@ -266,11 +275,11 @@ public class VeilSectionOcclusionGraph {
             this.nodes = new Node[size];
         }
 
-        public void put(SectionRenderDispatcher.RenderSection section, Node node) {
+        public void put(ChunkRenderDispatcher.RenderChunk section, Node node) {
             this.nodes[section.index] = node;
         }
 
-        public @Nullable Node get(SectionRenderDispatcher.RenderSection section) {
+        public @Nullable Node get(ChunkRenderDispatcher.RenderChunk section) {
             int index = section.index;
             return index >= 0 && index < this.nodes.length ? this.nodes[index] : null;
         }

@@ -1,5 +1,6 @@
 package foundry.veil.impl.client.editor;
 
+import foundry.veil.api.util.CodecUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -311,7 +312,7 @@ public class ParticleEditorInspector extends SingleWindowInspector {
 
             ImGui.pushID(i);
             if (ImGui.combo("shape", selectedShape, this.shapeArray)) {
-                ResourceLocation shapeKey = ResourceLocation.bySeparator(this.shapeKeys.get(selectedShape.get()), ':');
+                ResourceLocation shapeKey = ResourceLocation.of(this.shapeKeys.get(selectedShape.get()), ':');
                 EmitterShape shape = EmitterShapeRegistry.REGISTRY.get(shapeKey);
                 emitter.setShape(i, shape);
             }
@@ -430,7 +431,7 @@ public class ParticleEditorInspector extends SingleWindowInspector {
         }
 
         if (ImGui.combo("render_style", selectedRenderStyle, this.renderStyleArray)) {
-            data.setRenderStyle(RenderStyleRegistry.REGISTRY.get(ResourceLocation.parse(this.renderStyleArray[selectedRenderStyle.get()])));
+            data.setRenderStyle(RenderStyleRegistry.REGISTRY.get(new ResourceLocation(this.renderStyleArray[selectedRenderStyle.get()])));
         }
 
         // Sprite data (if the render style is billboard)
@@ -438,7 +439,7 @@ public class ParticleEditorInspector extends SingleWindowInspector {
 
         if (spriteData == null) {
             if (ImGui.button("Create Sprite Data")) {
-                data.setSpriteData(new SpriteData(ResourceLocation.fromNamespaceAndPath("", ""), 1, 1, 1, 1, false));
+                data.setSpriteData(new SpriteData(new ResourceLocation("", ""), 1, 1, 1, 1, false));
             }
         } else {
             if (ImGui.button("Delete Sprite Data")) {
@@ -450,7 +451,7 @@ public class ParticleEditorInspector extends SingleWindowInspector {
             ImGui.sameLine();
             if (ImGui.inputText("sprite", value)) {
                 try {
-                    data.setSpriteData(new SpriteData(ResourceLocation.parse(value.get()), spriteData.frameCount(), spriteData.frameTime(), spriteData.frameWidth(), spriteData.frameHeight(), spriteData.stretchToLifetime()));
+                    data.setSpriteData(new SpriteData(new ResourceLocation(value.get()), spriteData.frameCount(), spriteData.frameTime(), spriteData.frameWidth(), spriteData.frameHeight(), spriteData.stretchToLifetime()));
                 } catch (ResourceLocationException ignored) {
                 } // in the event of a non a-z0-9/._- character
             }
@@ -543,7 +544,7 @@ public class ParticleEditorInspector extends SingleWindowInspector {
 
     private void saveEmitterToFile(MutableParticleEmitter emitter, String filename, String namespace) {
         ParticleEmitterData data = emitter.dataFromMutable();
-        JsonElement result = ParticleEmitterData.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE, data).getOrThrow();
+        JsonElement result = CodecUtil.getOrThrow(ParticleEmitterData.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE, data));
         if (this.saveSeparateShape.get()) {
             // For some reason, "addProperty" also replaces it if it already exists. Go figure.
             result.getAsJsonObject().get("emitter_settings").getAsJsonObject().addProperty("shape", namespace + ":" + filename);
@@ -562,17 +563,17 @@ public class ParticleEditorInspector extends SingleWindowInspector {
             Minecraft.getInstance().gui.getChat().addMessage(Component.literal("Saved emitter to quasar/emitters/" + filename + ".json").withStyle(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, baseQuasarPath.resolve("emitters").toAbsolutePath().toString()))));
 
             if (this.saveSeparateShape.get()) {
-                this.writePrettyPrintedJson(EmitterShapeSettings.DIRECT_CODEC.listOf().encodeStart(JsonOps.INSTANCE, data.emitterSettings().emitterShapeSettings()).getOrThrow(), baseQuasarPath.resolve("modules/emitter/shape").toString(), filename);
+                this.writePrettyPrintedJson(CodecUtil.getOrThrow(EmitterShapeSettings.DIRECT_CODEC.listOf().encodeStart(JsonOps.INSTANCE, data.emitterSettings().emitterShapeSettings())), baseQuasarPath.resolve("modules/emitter/shape").toString(), filename);
                 Minecraft.getInstance().gui.getChat().addMessage(Component.literal("Saved emitter shape to quasar/modules/emitter/shape/" + filename + ".json").withStyle(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, baseQuasarPath.resolve("modules/emitter/shape").toAbsolutePath().toString()))));
             }
 
             if (this.saveSeparateSettings.get()) {
-                this.writePrettyPrintedJson(ParticleSettings.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE, data.emitterSettings().particleSettings()).getOrThrow(), baseQuasarPath.resolve("modules/emitter/particle").toString(), filename);
+                this.writePrettyPrintedJson(CodecUtil.getOrThrow(ParticleSettings.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE, data.emitterSettings().particleSettings())), baseQuasarPath.resolve("modules/emitter/particle").toString(), filename);
                 Minecraft.getInstance().gui.getChat().addMessage(Component.literal("Saved emitter particle settings to quasar/modules/emitter/particle/" + filename + ".json").withStyle(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, baseQuasarPath.resolve("modules/emitter/particle").toAbsolutePath().toString()))));
             }
 
             if (this.saveSeparateData.get()) {
-                this.writePrettyPrintedJson(QuasarParticleData.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE, data.particleData()).getOrThrow(), baseQuasarPath.resolve("modules/particle_data").toString(), filename);
+                this.writePrettyPrintedJson(CodecUtil.getOrThrow(QuasarParticleData.DIRECT_CODEC.encodeStart(JsonOps.INSTANCE, data.particleData())), baseQuasarPath.resolve("modules/particle_data").toString(), filename);
                 Minecraft.getInstance().gui.getChat().addMessage(Component.literal("Saved emitter particle data to quasar/modules/particle_data/" + filename + ".json").withStyle(s -> s.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, baseQuasarPath.resolve("modules/particle_data").toAbsolutePath().toString()))));
             }
         } catch (IOException e) {
@@ -670,9 +671,9 @@ public class ParticleEditorInspector extends SingleWindowInspector {
 
                 Matrix4f matrix4f = matrixStack.position();
 
-                debugBuilder.addVertex(matrix4f, 0, 0, 0).setColor(1, 1f, 1f, 1).setNormal(0, 1, 0);
+                debugBuilder.vertex(matrix4f, 0, 0, 0).color(1, 1f, 1f, 1).normal(0, 1, 0).endVertex();
                 Vector3f direction = this.getParticleSettings().initialDirection().normalize(new Vector3f()).mul(this.getParticleSettings().particleSpeed() * 10);
-                debugBuilder.addVertex(matrix4f, direction.x, direction.y, direction.z).setColor(1f, 0.15f, 0.15f, 1f).setNormal(0, 1, 0);
+                debugBuilder.vertex(matrix4f, direction.x, direction.y, direction.z).color(1f, 0.15f, 0.15f, 1f).normal(0, 1, 0).endVertex();
                 matrixStack.matrixPop();
                 matrixStack.matrixPop();
             }

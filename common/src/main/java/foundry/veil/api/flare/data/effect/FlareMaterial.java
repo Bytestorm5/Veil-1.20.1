@@ -34,7 +34,7 @@ public final class FlareMaterial {
             Codec.unboundedMap(
                             Codec.STRING,
                             CodecUtil.registryOrLegacyCodec(PropertyRegistry.REGISTRY)
-                                    .<Property<?>>dispatchMap(Property::getType, Property::codec)
+                                    .<Property<?>>dispatchMap(Property::getType, type -> Property.codec(type).codec())
                                     .codec()
                     )
                     .optionalFieldOf("properties", Map.of())

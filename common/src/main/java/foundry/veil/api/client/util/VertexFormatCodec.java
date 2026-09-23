@@ -16,13 +16,13 @@ import java.util.Map;
 public class VertexFormatCodec {
 
     private static final Map<String, VertexFormatElement> DEFAULT_ELEMENTS = Map.of(
-            "POSITION", VertexFormatElement.POSITION,
-            "COLOR", VertexFormatElement.COLOR,
-            "UV0", VertexFormatElement.UV0,
-            "UV1", VertexFormatElement.UV1,
-            "UV2", VertexFormatElement.UV2,
-            "NORMAL", VertexFormatElement.NORMAL,
-            "UV", VertexFormatElement.UV);
+            "POSITION", DefaultVertexFormat.ELEMENT_POSITION,
+            "COLOR", DefaultVertexFormat.ELEMENT_COLOR,
+            "UV0", DefaultVertexFormat.ELEMENT_UV0,
+            "UV1", DefaultVertexFormat.ELEMENT_UV1,
+            "UV2", DefaultVertexFormat.ELEMENT_UV2,
+            "NORMAL", DefaultVertexFormat.ELEMENT_NORMAL,
+            "UV", DefaultVertexFormat.ELEMENT_UV);
     private static final Map<String, VertexFormat> DEFAULT_FORMATS = Map.ofEntries(
             Map.entry("BLIT_SCREEN", DefaultVertexFormat.BLIT_SCREEN),
             Map.entry("BLOCK", DefaultVertexFormat.BLOCK),

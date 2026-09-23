@@ -1,5 +1,6 @@
 package foundry.veil.api.client.render.shader.program;
 
+import foundry.veil.api.util.CodecUtil;
 import com.google.common.collect.Iterables;
 import com.google.gson.*;
 import com.mojang.serialization.DataResult;
@@ -152,7 +153,7 @@ public record ProgramDefinition(@Nullable ResourceLocation vertex,
             ShaderBlendMode blendMode;
             if (json.has("blend")) {
                 DataResult<ShaderBlendMode> result = ShaderBlendMode.CODEC.parse(JsonOps.INSTANCE, json.get("blend"));
-                if (result.isError()) {
+                if (CodecUtil.isError(result)) {
                     throw new JsonSyntaxException(result.error().orElseThrow().message());
                 }
                 blendMode = result.result().orElseThrow();
@@ -171,8 +172,8 @@ public record ProgramDefinition(@Nullable ResourceLocation vertex,
 
                 for (JsonElement featureElement : requiredFeaturesElement.getAsJsonArray()) {
                     DataResult<ShaderFeature> result = ShaderFeature.CODEC.parse(JsonOps.INSTANCE, featureElement);
-                    if (result.isSuccess()) {
-                        features.add(result.getOrThrow());
+                    if (CodecUtil.isSuccess(result)) {
+                        features.add(CodecUtil.getOrThrow(result));
                         continue;
                     }
 

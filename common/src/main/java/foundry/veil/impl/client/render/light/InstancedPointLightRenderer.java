@@ -1,9 +1,9 @@
 package foundry.veil.impl.client.render.light;
 
+import foundry.veil.impl.client.render.BackportRenderHelper;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import foundry.veil.Veil;
 import foundry.veil.api.client.render.light.data.PointLightData;
@@ -31,10 +31,10 @@ public class InstancedPointLightRenderer extends InstancedLightRenderer<PointLig
     }
 
     @Override
-    protected MeshData createMesh() {
-        BufferBuilder builder = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
+    protected BufferBuilder.RenderedBuffer createMesh() {
+        BufferBuilder builder = BackportRenderHelper.begin(RenderSystem.renderThreadTesselator(), VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
         LightTypeRenderer.createInvertedCube(builder);
-        return builder.buildOrThrow();
+        return BackportRenderHelper.buildOrThrow(builder);
     }
 
     @Override

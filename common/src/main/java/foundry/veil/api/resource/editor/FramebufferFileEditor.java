@@ -1,5 +1,6 @@
 package foundry.veil.api.resource.editor;
 
+import foundry.veil.api.util.CodecUtil;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -479,7 +480,7 @@ public class FramebufferFileEditor implements ResourceFileEditor<FramebufferReso
                 throw new JsonSyntaxException(result.error().get().message());
             }
 
-            this.save(result.getOrThrow(), this.resourceManager, this.resource);
+            this.save(CodecUtil.getOrThrow(result), this.resourceManager, this.resource);
         } catch (Exception e) {
             Veil.LOGGER.error("Failed to save resource: {}", this.resource.resourceInfo().location(), e);
         }

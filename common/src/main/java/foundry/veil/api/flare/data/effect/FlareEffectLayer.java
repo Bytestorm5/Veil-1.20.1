@@ -32,7 +32,7 @@ public final class FlareEffectLayer {
             Codec.BOOL.optionalFieldOf("disabled", false).forGetter(FlareEffectLayer::isDisabled),
             FlareModel.CODEC.fieldOf("model").forGetter(FlareEffectLayer::getModel),
             CodecUtil.registryOrLegacyCodec(PropertyModifierRegistry.REGISTRY)
-                    .<PropertyModifier<?>>dispatch(PropertyModifier::type, PropertyModifierRegistry.PropertyModifierType::codec)
+                    .<PropertyModifier<?>>dispatch(PropertyModifier::type, type -> type.codec().codec())
                     .listOf()
                     .optionalFieldOf("modifiers", List.of())
                     .forGetter(layer -> List.of(layer.originalModifiers))

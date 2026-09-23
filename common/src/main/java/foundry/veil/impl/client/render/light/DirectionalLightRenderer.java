@@ -1,5 +1,6 @@
 package foundry.veil.impl.client.render.light;
 
+import foundry.veil.impl.client.render.BackportRenderHelper;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -41,11 +42,11 @@ public class DirectionalLightRenderer implements LightTypeRenderer<DirectionalLi
         VertexArray.unbind();
     }
 
-    private static MeshData createMesh() {
+    private static BufferBuilder.RenderedBuffer createMesh() {
         Tesselator tesselator = RenderSystem.renderThreadTesselator();
-        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
+        BufferBuilder bufferBuilder = BackportRenderHelper.begin(tesselator, VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION);
         LightTypeRenderer.createQuad(bufferBuilder);
-        return bufferBuilder.buildOrThrow();
+        return BackportRenderHelper.buildOrThrow(bufferBuilder);
     }
 
     @Override

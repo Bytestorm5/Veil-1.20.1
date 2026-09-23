@@ -8,8 +8,16 @@ base {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(java_version)
+    // Compile with a Java 21 toolchain so compile-only dependencies built for Java 21 (ImGuiMC) can be read,
+    // but emit Java 17 bytecode against the Java 17 API for Minecraft 1.20.1.
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    disableAutoTargetJvm()
     withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = java_version as int
 }
 
 javadoc {
@@ -128,8 +136,6 @@ processResources {
             'group'                        : project.group, //Else we target the task's group.
             'minecraft_version'            : minecraft_version,
             'minecraft_version_range'      : minecraft_version_range,
-            'fabric_version'               : fabric_version,
-            'fabric_loader_version'        : fabric_loader_version,
             'mod_name'                     : mod_name,
             'mod_author'                   : mod_author,
             'mod_authors'                  : "\"${mod_author.split(",").collect { it.trim() }.join("\", \"")}\"",
@@ -138,15 +144,16 @@ processResources {
             'mod_id'                       : mod_id,
             'license'                      : license,
             'description'                  : project.description,
-            'neoforge_version'             : neoforge_version,
-            'neoforge_version_range'       : neoforge_version_range,
-            'neoforge_loader_version_range': neoforge_loader_version_range,
-            'sodium_version'               : sodium_version,
+            'forge_version'                : forge_version,
+            'forge_version_range'          : forge_version_range,
+            'forge_loader_version_range'   : forge_loader_version_range,
+            'embeddium_version'            : embeddium_version,
+            'oculus_version'               : oculus_version,
             'imguimc_version'              : imguimc_version,
             'java_version'                 : java_version
     ]
 
-    filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'META-INF/neoforge.mods.toml', '*.mixins.json']) {
+    filesMatching(['pack.mcmeta', 'META-INF/mods.toml', '*.mixins.json']) {
         expand expandProps
     }
     inputs.properties(expandProps)
@@ -164,4 +171,8 @@ publishing {
             url = System.getenv('local_maven_url')
         }
     }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.compilerArgs << '-Xmaxerrs' << '10000'
 }

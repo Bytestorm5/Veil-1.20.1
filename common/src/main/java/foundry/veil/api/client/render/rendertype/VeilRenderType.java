@@ -4,7 +4,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import foundry.veil.Veil;
 import foundry.veil.api.client.render.VeilRenderBridge;
@@ -293,8 +294,12 @@ public final class VeilRenderType extends RenderType {
         }
 
         @Override
-        public void draw(@NotNull MeshData meshData) {
-            super.draw(meshData);
+        public void end(@NotNull BufferBuilder bufferBuilder, @NotNull VertexSorting quadSorting) {
+            if (!bufferBuilder.building()) {
+                return;
+            }
+
+            super.end(bufferBuilder, quadSorting);
             if (BufferUploader.lastImmediateBuffer != null) {
 
                 Matrix4f modelViewMatrix = RenderSystem.getModelViewMatrix();
@@ -357,10 +362,12 @@ public final class VeilRenderType extends RenderType {
         }
 
         @Override
-        public void draw(@NotNull MeshData meshData) {
+        public void end(@NotNull BufferBuilder bufferBuilder, @NotNull VertexSorting quadSorting) {
             RenderType renderType = this.get();
             if (renderType != null) {
-                renderType.draw(meshData);
+                renderType.end(bufferBuilder, quadSorting);
+            } else if (bufferBuilder.building()) {
+                bufferBuilder.end().release();
             }
         }
 
@@ -404,12 +411,6 @@ public final class VeilRenderType extends RenderType {
         public boolean canConsolidateConsecutiveGeometry() {
             RenderType renderType = this.get();
             return renderType != null && renderType.canConsolidateConsecutiveGeometry();
-        }
-
-        @Override
-        public boolean sortOnUpload() {
-            RenderType renderType = this.get();
-            return renderType != null && renderType.sortOnUpload();
         }
 
         /**

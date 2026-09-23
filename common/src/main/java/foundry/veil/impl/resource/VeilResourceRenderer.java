@@ -49,7 +49,7 @@ public class VeilResourceRenderer {
         if (ImGui.beginPopupContextItem("" + info.location())) {
             ImGui.pushStyleVar(ImGuiStyleVar.ItemSpacing, 2f, 2f);
             ObjectArrayList<VeilResourceAction<?>> actions = new ObjectArrayList<>(resource.getActions());
-            actions.addFirst(new OverrideAction<>());
+            actions.add(0, new OverrideAction<>());
 
             if (ImGui.selectable("##copy_path")) {
                 ImGui.setClipboardText(info.location().toString());

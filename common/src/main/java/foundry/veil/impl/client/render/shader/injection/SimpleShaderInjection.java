@@ -70,7 +70,7 @@ public class SimpleShaderInjection implements ShaderInjection {
 
             for (GlslNode node : GlslParser.parseExpressionList(function.code())) {
                 if (function.head()) {
-                    body.addFirst(node);
+                    body.add(0, node);
                 } else {
                     body.add(node);
                 }

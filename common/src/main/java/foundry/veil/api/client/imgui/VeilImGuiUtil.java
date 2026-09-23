@@ -1,6 +1,7 @@
 package foundry.veil.api.client.imgui;
 
 
+import net.minecraft.SharedConstants;
 import foundry.imgui.api.ImGuiMC;
 import foundry.veil.Veil;
 import foundry.veil.api.client.editor.EditorManager;
@@ -320,7 +321,7 @@ public class VeilImGuiUtil {
             }
 
             if (this.clickEvent.getAction() == ClickEvent.Action.RUN_COMMAND) {
-                String s = StringUtil.filterText(this.clickEvent.getValue());
+                String s = SharedConstants.filterText(this.clickEvent.getValue());
                 if (s.startsWith("/")) {
                     LocalPlayer player = Minecraft.getInstance().player;
                     if (player != null && !player.connection.sendUnsignedCommand(s.substring(1))) {

@@ -69,7 +69,7 @@ public final class ShaderInjectionAdapter {
     }
 
     private static String loadGlsl(ResourceLocation path, ResourceProvider provider) throws IOException {
-        ResourceLocation fullPath = ResourceLocation.fromNamespaceAndPath(path.getNamespace(), "pinwheel/shader_injection/" + path.getPath());
+        ResourceLocation fullPath = new ResourceLocation(path.getNamespace(), "pinwheel/shader_injection/" + path.getPath());
         return resolveIncludes(fullPath, provider, new HashSet<>());
     }
 
@@ -91,7 +91,7 @@ public final class ShaderInjectionAdapter {
         for (String line : source.split("\n", -1)) {
             Matcher m = INCLUDE_PATTERN.matcher(line);
             if (m.matches()) {
-                ResourceLocation includeId = ResourceLocation.parse(m.group(1));
+                ResourceLocation includeId = new ResourceLocation(m.group(1));
                 ResourceLocation includePath = INCLUDE_LISTER.idToFile(includeId);
                 out.append(resolveIncludes(includePath, provider, visited));
             } else {

@@ -33,10 +33,10 @@
 //
 //        // Low-res mesh
 //        float sqrt2 = (float) Math.sqrt(2.0);
-//        bufferBuilder.addVertex(-sqrt2, -sqrt2, 0);
-//        bufferBuilder.addVertex(sqrt2, -sqrt2, 0);
-//        bufferBuilder.addVertex(-sqrt2, sqrt2, 0);
-//        bufferBuilder.addVertex(sqrt2, sqrt2, 0);
+//        bufferBuilder.vertex(-sqrt2, -sqrt2, 0).endVertex();
+//        bufferBuilder.vertex(sqrt2, -sqrt2, 0).endVertex();
+//        bufferBuilder.vertex(-sqrt2, sqrt2, 0).endVertex();
+//        bufferBuilder.vertex(sqrt2, sqrt2, 0).endVertex();
 //
 //        return bufferBuilder.buildOrThrow();
 //    }

@@ -2,8 +2,6 @@ package foundry.veil.api.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -16,14 +14,14 @@ import javax.annotation.Nullable;
 
 public class CachedBufferSource implements MultiBufferSource, NativeResource {
 
-    private final Object2ObjectMap<RenderType, ByteBufferBuilder> buffers = new Object2ObjectArrayMap<>();
+    private final Object2ObjectMap<RenderType, BufferBuilder> buffers = new Object2ObjectArrayMap<>();
     private final Object2ObjectMap<RenderType, BufferBuilder> startedBuilders = new Object2ObjectArrayMap<>();
 
     @Nullable
     private RenderType lastSharedType;
 
     private void clearBuffers() {
-        this.buffers.values().forEach(ByteBufferBuilder::close);
+        // 1.20.1 buffer builders own their memory and have no explicit free
         this.buffers.clear();
     }
 
@@ -39,8 +37,8 @@ public class CachedBufferSource implements MultiBufferSource, NativeResource {
             return last;
         }
 
-        ByteBufferBuilder bytebufferbuilder = this.buffers.computeIfAbsent(renderType, unused -> new ByteBufferBuilder(renderType.bufferSize()));
-        BufferBuilder builder = new BufferBuilder(bytebufferbuilder, renderType.mode(), renderType.format());
+        BufferBuilder builder = this.buffers.computeIfAbsent(renderType, unused -> new BufferBuilder(renderType.bufferSize()));
+        builder.begin(renderType.mode(), renderType.format());
         this.startedBuilders.put(renderType, builder);
         return builder;
     }
@@ -77,15 +75,8 @@ public class CachedBufferSource implements MultiBufferSource, NativeResource {
     }
 
     private void endBatch(RenderType renderType, BufferBuilder builder) {
-        MeshData meshdata = builder.build();
-        if (meshdata != null) {
-            if (renderType.sortOnUpload()) {
-                ByteBufferBuilder bytebufferbuilder = this.buffers.computeIfAbsent(renderType, unused -> new ByteBufferBuilder(renderType.bufferSize()));
-                meshdata.sortQuads(bytebufferbuilder, RenderSystem.getVertexSorting());
-            }
-
-            renderType.draw(meshdata);
-        }
+        // Sorts quads if the render type requires it, then draws the buffer
+        renderType.end(builder, RenderSystem.getVertexSorting());
 
         if (renderType.equals(this.lastSharedType)) {
             this.lastSharedType = null;

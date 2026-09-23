@@ -370,7 +370,7 @@ public class ShaderUniformCache {
                         MemoryUtil.memFree(fieldIndices);
                     }
 
-                    Uniform last = fields.getLast();
+                    Uniform last = fields.get(fields.size() - 1);
                     boolean array = last.name.endsWith("[0]");
                     if (array) {
                         fields.set(fields.size() - 1, new Uniform(last.name.substring(0, last.name.length() - 3), last.location, last.offset, last.type, 1));

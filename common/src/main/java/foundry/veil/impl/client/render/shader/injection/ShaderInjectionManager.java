@@ -75,7 +75,7 @@ public class ShaderInjectionManager extends SimplePreparableReloadListener<Shade
     private static ResourceLocation stripShaderExtension(ResourceLocation location) {
         String path = location.getPath();
         String stripped = SHADER_EXTENSION.matcher(path).replaceFirst("");
-        return !stripped.equals(path) ? ResourceLocation.fromNamespaceAndPath(location.getNamespace(), stripped) : null;
+        return !stripped.equals(path) ? new ResourceLocation(location.getNamespace(), stripped) : null;
     }
 
     /**

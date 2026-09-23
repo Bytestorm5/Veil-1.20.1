@@ -47,7 +47,7 @@ public final class RenderTypeLayerRegistry {
     }
 
     private static <T extends RenderTypeLayer> RegistryObject<LayerType<T>> register(String name, MapCodec<T> codec) {
-        return VANILLA_PROVIDER.register(ResourceLocation.withDefaultNamespace(name), () -> new LayerType<>(codec));
+        return VANILLA_PROVIDER.register(new ResourceLocation(name), () -> new LayerType<>(codec));
     }
 
     private static <T extends RenderTypeLayer> RegistryObject<LayerType<T>> register(ResourceLocation id, MapCodec<T> codec) {

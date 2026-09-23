@@ -36,7 +36,7 @@ public class FloatProperty extends Property<Float> {
                 this.overrideValue = value;
                 optionalMolang.ifPresent(molang -> {
                     try {
-                        this.overrideValue = this.getEnvironment().get().resolve(molang.getFirst());
+                        this.overrideValue = this.getEnvironment().get().resolve(molang.get(0));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

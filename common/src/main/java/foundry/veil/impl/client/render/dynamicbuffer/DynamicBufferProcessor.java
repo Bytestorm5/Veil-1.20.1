@@ -1,5 +1,7 @@
 package foundry.veil.impl.client.render.dynamicbuffer;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import foundry.veil.impl.client.render.BackportRenderHelper;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 import foundry.veil.Veil;
@@ -78,7 +80,7 @@ public class DynamicBufferProcessor implements ShaderPreProcessor {
                     sampler = parameters.get(0);
                     lightmapUV = parameters.get(1);
                     blockLightmap = true;
-                } else if (vertexFormat.contains(VertexFormatElement.UV2)) {
+                } else if (vertexFormat.getElements().contains(DefaultVertexFormat.ELEMENT_UV2)) {
                     Optional<GlslNode> texelFetchOptional = mainFunction.stream().filter(node -> {
                         if (!(node instanceof GlslInvokeFunctionNode invokeFunctionNode) || invokeFunctionNode.getParameters().size() != 3) {
                             return false;
@@ -91,7 +93,7 @@ public class DynamicBufferProcessor implements ShaderPreProcessor {
                                 operation.getSecond() instanceof GlslConstantNode constantNode &&
                                 constantNode.intValue() == 16 &&
                                 operation.getOperand() == GlslOperationNode.Operand.DIVIDE &&
-                                vertexFormat.getElementName(VertexFormatElement.UV2).equals(variableNode.getName());
+                                variableNode.getName().equals(BackportRenderHelper.getElementName(vertexFormat, DefaultVertexFormat.ELEMENT_UV2));
                     }).findFirst();
 
                     if (texelFetchOptional.isPresent()) {
@@ -176,9 +178,9 @@ public class DynamicBufferProcessor implements ShaderPreProcessor {
                         modified = true;
                     }
 
-                    if (vertexFormat.contains(VertexFormatElement.NORMAL)) {
+                    if (vertexFormat.getElements().contains(DefaultVertexFormat.ELEMENT_NORMAL)) {
                         if (ctx.isVertex()) {
-                            Optional<GlslNewFieldNode> fieldOptional = tree.field(vertexFormat.getElementName(VertexFormatElement.NORMAL));
+                            Optional<GlslNewFieldNode> fieldOptional = tree.field(BackportRenderHelper.getElementName(vertexFormat, DefaultVertexFormat.ELEMENT_NORMAL));
                             if (fieldOptional.isPresent()) {
                                 treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression("uniform mat3 NormalMat"));
                                 treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression("out vec3 Pass" + type.getSourceName()));
@@ -216,8 +218,8 @@ public class DynamicBufferProcessor implements ShaderPreProcessor {
                             mainFunctionBody.add(new GlslAssignmentNode(new GlslVariableNode("Pass" + type.getSourceName()), color, GlslAssignmentNode.Operand.EQUAL));
                             modified = true;
                             data.compute("mask", (s, o) -> (o instanceof Integer val ? val : 0) | type.getMask());
-                        } else if (vertexFormat.contains(VertexFormatElement.COLOR)) {
-                            Optional<GlslNewFieldNode> fieldOptional = tree.field(vertexFormat.getElementName(VertexFormatElement.COLOR));
+                        } else if (vertexFormat.getElements().contains(DefaultVertexFormat.ELEMENT_COLOR)) {
+                            Optional<GlslNewFieldNode> fieldOptional = tree.field(BackportRenderHelper.getElementName(vertexFormat, DefaultVertexFormat.ELEMENT_COLOR));
                             if (fieldOptional.isPresent()) {
                                 treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression("out vec4 Pass" + type.getSourceName()));
                                 mainFunctionBody.add(new GlslAssignmentNode(new GlslVariableNode("Pass" + type.getSourceName()), new GlslVariableNode(fieldOptional.get().getName()), GlslAssignmentNode.Operand.EQUAL));
@@ -227,7 +229,7 @@ public class DynamicBufferProcessor implements ShaderPreProcessor {
                         }
                     } else if (inVertex) {
                         treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression("in vec4 Pass" + type.getSourceName()));
-                        treeBody.addFirst(GlslParser.parseExpression(output));
+                        treeBody.add(0, GlslParser.parseExpression(output));
 
                         boolean hasColorModulator = tree.field("ColorModulator").isPresent();
                         boolean inserted = false;
@@ -239,7 +241,7 @@ public class DynamicBufferProcessor implements ShaderPreProcessor {
                                 }
                                 return invokeFunctionNode.getHeader() instanceof GlslVariableNode variableNode &&
                                         "texture".equals(variableNode.getName()) &&
-                                        invokeFunctionNode.getParameters().getFirst() instanceof GlslVariableNode textureSampler &&
+                                        invokeFunctionNode.getParameters().get(0) instanceof GlslVariableNode textureSampler &&
                                         "Sampler0".equals(textureSampler.getName());
                             }).findFirst();
 
@@ -310,7 +312,7 @@ public class DynamicBufferProcessor implements ShaderPreProcessor {
 
                     List<GlslNewFieldNode> fields = tree.searchField(copyName).toList();
                     if (fields.size() == 1) {
-                        specifiedType = fields.getFirst().getType();
+                        specifiedType = fields.get(0).getType();
                         GlslTree.GlslBlock pair = block.get();
                         body = pair.body();
                         index = pair.index() + 1;

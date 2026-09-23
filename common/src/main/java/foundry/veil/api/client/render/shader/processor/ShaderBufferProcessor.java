@@ -40,7 +40,7 @@ public class ShaderBufferProcessor implements ShaderPreProcessor {
             String interfaceName = parts.length > 1 ? parts[1].trim() : null;
 
             try {
-                ResourceLocation name = ResourceLocation.parse(bufferId);
+                ResourceLocation name = new ResourceLocation(bufferId);
                 VeilShaderBufferLayout<?> layout = VeilShaderBufferRegistry.REGISTRY.get(name);
                 if (layout == null) {
                     throw new IOException("Unknown buffer: " + name);

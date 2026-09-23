@@ -35,7 +35,7 @@ public record ShaderInjectionDefinition(
 
     public static Gson createGson() {
         return new GsonBuilder()
-                .registerTypeAdapter(ResourceLocation.class, (JsonDeserializer<ResourceLocation>) (json, type, context) -> ResourceLocation.parse(json.getAsString()))
+                .registerTypeAdapter(ResourceLocation.class, (JsonDeserializer<ResourceLocation>) (json, type, context) -> new ResourceLocation(json.getAsString()))
                 .registerTypeAdapter(ResourceLocation.class, (JsonSerializer<ResourceLocation>) (location, type, context) -> context.serialize(location.toString()))
                 .registerTypeAdapter(ShaderInjectionDefinition.class, new Deserializer())
                 .create();
@@ -53,7 +53,7 @@ public record ShaderInjectionDefinition(
     }
 
     public @Nullable ResourceLocation target() {
-        return this.targets.isEmpty() ? null : this.targets.getFirst();
+        return this.targets.isEmpty() ? null : this.targets.get(0);
     }
 
     private static class Deserializer implements JsonDeserializer<ShaderInjectionDefinition> {
@@ -80,10 +80,10 @@ public record ShaderInjectionDefinition(
         if (element instanceof JsonArray array) {
             List<ResourceLocation> result = new ArrayList<>();
             for (JsonElement el : array) {
-                result.add(ResourceLocation.parse(el.getAsString()));
+                result.add(new ResourceLocation(el.getAsString()));
             }
             return result;
         }
-        return List.of(ResourceLocation.parse(element.getAsString()));
+        return List.of(new ResourceLocation(element.getAsString()));
     }
 }

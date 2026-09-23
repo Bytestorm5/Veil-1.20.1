@@ -1,5 +1,6 @@
 package foundry.veil.api.client.color;
 
+import foundry.veil.api.util.CodecUtil;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -536,7 +537,7 @@ public class Color implements Colorc {
         @Override
         public <T> DataResult<Pair<Integer, T>> decode(DynamicOps<T> ops, T input) {
             DataResult<Integer> numberElement = this.decodeElement(ops, input);
-            if (numberElement.isSuccess()) {
+            if (CodecUtil.isSuccess(numberElement)) {
                 return numberElement.map(col -> Pair.of(col, input));
             }
 
@@ -552,19 +553,19 @@ public class Color implements Colorc {
                 int result = 0;
                 for (int i = 0; i < 3; i++) {
                     DataResult<Integer> colorElement = this.decodeElement(ops, values.get(i));
-                    if (!colorElement.isSuccess()) {
+                    if (!CodecUtil.isSuccess(colorElement)) {
                         int index = i;
                         return colorElement.map(col -> Pair.of(col, input)).mapError(s -> s + " at index " + index);
                     }
-                    result |= (colorElement.getOrThrow() & 0xFF) << (16 - i * 8);
+                    result |= (CodecUtil.getOrThrow(colorElement) & 0xFF) << (16 - i * 8);
                 }
                 if (this.alpha) {
                     if (values.size() == 4) {
                         DataResult<Integer> colorElement = this.decodeElement(ops, values.get(3));
-                        if (!colorElement.isSuccess()) {
+                        if (!CodecUtil.isSuccess(colorElement)) {
                             return colorElement.map(col -> Pair.of(col, input)).mapError(s -> s + " at index 3");
                         }
-                        result |= (colorElement.getOrThrow() & 0xFF) << 24;
+                        result |= (CodecUtil.getOrThrow(colorElement) & 0xFF) << 24;
                     } else {
                         result |= 0xFF000000;
                     }

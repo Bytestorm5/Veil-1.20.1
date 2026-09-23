@@ -2,7 +2,8 @@
   "required": true,
   "minVersion": "0.8",
   "package": "foundry.veil.mixin.necromancer",
-  "compatibilityLevel": "JAVA_21",
+  "refmap": "veil.refmap.json",
+  "compatibilityLevel": "JAVA_17",
   "plugin": "foundry.veil.VeilMixinPluginImpl",
   "client": [
     "client.NecromancerClientLevelMixin",
@@ -12,4 +13,3 @@
     "defaultRequire": 1
   }
 }
-  

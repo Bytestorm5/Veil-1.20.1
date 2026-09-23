@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public sealed interface UniformValue permits FloatUniform, IntUniform, Matrix2Uniform, Matrix3Uniform, Matrix4Uniform {
 
-    Codec<UniformValue> CODEC = Type.CODEC.dispatch(UniformValue::type, Type::getCodec);
+    Codec<UniformValue> CODEC = Type.CODEC.dispatch(UniformValue::type, type -> type.getCodec().codec());
 
     void apply(ShaderUniform uniform);
 

@@ -57,9 +57,9 @@ public class VanillaShaderCompiler {
 
                     @Override
                     public String applyImport(boolean useFullPath, @NotNull String directory) {
-                        ResourceLocation loc = ResourceLocation.parse(directory);
+                        ResourceLocation loc = new ResourceLocation(directory);
                         String normalised = FileUtil.normalizeResourcePath((useFullPath ? path : "shaders/include/") + loc.getPath());
-                        ResourceLocation resourcelocation = ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), normalised);
+                        ResourceLocation resourcelocation = new ResourceLocation(loc.getNamespace(), normalised);
 
                         if (!this.importedPaths.add(resourcelocation)) {
                             return null;

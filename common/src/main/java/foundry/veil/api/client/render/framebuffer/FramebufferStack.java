@@ -33,7 +33,7 @@ public class FramebufferStack {
      */
     public static void push(@Nullable ResourceLocation name) {
         // Make sure this isn't called multiple times
-        if (name != null && !STATE_STACK.isEmpty() && name.equals(STATE_STACK.getLast().name)) {
+        if (name != null && !STATE_STACK.isEmpty() && name.equals(STATE_STACK.get(STATE_STACK.size() - 1).name)) {
             return;
         }
 
@@ -71,7 +71,7 @@ public class FramebufferStack {
         }
 
         lastPop = name;
-        State state = STATE_STACK.removeFirst();
+        State state = STATE_STACK.remove(0);
         if (state.framebuffer == AdvancedFbo.getMainFramebuffer().getId()) {
             AdvancedFbo.unbind();
             return;

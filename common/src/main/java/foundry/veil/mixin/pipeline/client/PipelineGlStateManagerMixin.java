@@ -12,22 +12,22 @@ import static org.lwjgl.opengl.ARBDirectStateAccess.*;
 @Mixin(GlStateManager.class)
 public class PipelineGlStateManagerMixin {
 
-    @WrapOperation(method = "_glGenBuffers", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL15;glGenBuffers()I", remap = false), remap = false)
+    @WrapOperation(method = "_glGenBuffers", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL15;glGenBuffers()I", remap = false))
     private static int createBuffers(Operation<Integer> original) {
         return VeilRenderSystem.directStateAccessSupported() ? glCreateBuffers() : original.call();
     }
 
-    @WrapOperation(method = "_glGenVertexArrays", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL30;glGenVertexArrays()I", remap = false), remap = false)
+    @WrapOperation(method = "_glGenVertexArrays", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL30;glGenVertexArrays()I", remap = false))
     private static int createVertexArrays(Operation<Integer> original) {
         return VeilRenderSystem.directStateAccessSupported() ? glCreateVertexArrays() : original.call();
     }
 
-    @WrapOperation(method = "glGenFramebuffers", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL30;glGenFramebuffers()I", remap = false), remap = false)
+    @WrapOperation(method = "glGenFramebuffers", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL30;glGenFramebuffers()I", remap = false))
     private static int glGenFramebuffers(Operation<Integer> original) {
         return VeilRenderSystem.directStateAccessSupported() ? glCreateFramebuffers() : original.call();
     }
 
-    @WrapOperation(method = "glGenRenderbuffers", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL30;glGenRenderbuffers()I", remap = false), remap = false)
+    @WrapOperation(method = "glGenRenderbuffers", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL30;glGenRenderbuffers()I", remap = false))
     private static int glGenRenderbuffers(Operation<Integer> original) {
         return VeilRenderSystem.directStateAccessSupported() ? glCreateRenderbuffers() : original.call();
     }

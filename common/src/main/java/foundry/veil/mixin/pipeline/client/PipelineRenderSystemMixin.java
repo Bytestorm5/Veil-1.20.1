@@ -15,14 +15,14 @@ import java.util.function.Supplier;
 @Mixin(RenderSystem.class)
 public class PipelineRenderSystemMixin {
 
-    @Inject(method = "setShader", at = @At("TAIL"), remap = false)
+    @Inject(method = "setShader", at = @At("TAIL"))
     private static void setShader(Supplier<ShaderInstance> shader, CallbackInfo ci) {
         if (!(shader.get() instanceof ShaderProgramImpl.Wrapper)) {
             VeilRenderSystem.shaderUpdate();
         }
     }
 
-    @Inject(method = "setShaderLights", at = @At("HEAD"), remap = false)
+    @Inject(method = "setShaderLights", at = @At("HEAD"))
     private static void setShaderLights(Vector3f light0, Vector3f light1, CallbackInfo ci) {
         VeilRenderSystem.setShaderLights(light0, light1);
     }

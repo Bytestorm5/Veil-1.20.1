@@ -1,5 +1,7 @@
 package foundry.veil.api.resource.editor;
 
+import foundry.veil.api.util.CodecUtil;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
@@ -96,10 +98,10 @@ public class ShellInspector implements ResourceFileEditor<ShellResource> {
                 if (renderType == null) {
                     return;
                 }
-                Matrix4fStack stack = RenderSystem.getModelViewStack();
+                PoseStack stack = RenderSystem.getModelViewStack();
 
-                stack.pushMatrix();
-                stack.set(modelView);
+                stack.pushPose();
+                stack.last().pose().set(modelView);
                 RenderSystem.applyModelViewMatrix();
                 RenderSystem.backupProjectionMatrix();
                 RenderSystem.setProjectionMatrix(projMat, VertexSorting.ORTHOGRAPHIC_Z);
@@ -107,7 +109,7 @@ public class ShellInspector implements ResourceFileEditor<ShellResource> {
                 shell.getVertexArray().bind();
                 shell.getVertexArray().drawWithRenderType(renderType);
 
-                stack.popMatrix();
+                stack.popPose();
                 RenderSystem.restoreProjectionMatrix();
                 RenderSystem.applyModelViewMatrix();
             });
@@ -159,7 +161,7 @@ public class ShellInspector implements ResourceFileEditor<ShellResource> {
                 throw new JsonSyntaxException(result.error().get().message());
             }
 
-            this.shell = result.getOrThrow().bake();
+            this.shell = CodecUtil.getOrThrow(result).bake();
         } catch (Exception e) {
             Veil.LOGGER.error("Failed to load shell", e);
         }

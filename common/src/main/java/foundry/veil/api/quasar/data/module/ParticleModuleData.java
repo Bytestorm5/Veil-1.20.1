@@ -14,7 +14,7 @@ public interface ParticleModuleData {
      * @since 4.3.0
      */
     Codec<ParticleModuleData> DIRECT_CODEC = ParticleModuleTypeRegistry.CODEC
-            .dispatch("module", ParticleModuleData::getType, ModuleType::codec);
+            .dispatch("module", ParticleModuleData::getType, type -> type.codec().codec());
 
     /**
      * @deprecated Use {@link #DIRECT_CODEC} instead

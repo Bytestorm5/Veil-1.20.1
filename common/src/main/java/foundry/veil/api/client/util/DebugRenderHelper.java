@@ -33,30 +33,30 @@ public final class DebugRenderHelper {
         float aX = (float) pMaxX;
         float aY = (float) pMaxY;
         float aZ = (float) pMaxZ;
-        pConsumer.addVertex(pose, iX, iY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 1.0F, 0.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, iY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 1.0F, 0.0F, 0.0F);
-        pConsumer.addVertex(pose, iX, iY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 1.0F, 0.0F);
-        pConsumer.addVertex(pose, iX, aY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 1.0F, 0.0F);
-        pConsumer.addVertex(pose, iX, iY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 0.0F, 1.0F);
-        pConsumer.addVertex(pose, iX, iY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 0.0F, 1.0F);
-        pConsumer.addVertex(pose, aX, iY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 1.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, aY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 1.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, aY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, -1.0F, 0.0F, 0.0F);
-        pConsumer.addVertex(pose, iX, aY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, -1.0F, 0.0F, 0.0F);
-        pConsumer.addVertex(pose, iX, aY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 0.0F, 1.0F);
-        pConsumer.addVertex(pose, iX, aY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 0.0F, 1.0F);
-        pConsumer.addVertex(pose, iX, aY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, -1.0F, 0.0F);
-        pConsumer.addVertex(pose, iX, iY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, -1.0F, 0.0F);
-        pConsumer.addVertex(pose, iX, iY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 1.0F, 0.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, iY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 1.0F, 0.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, iY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 0.0F, -1.0F);
-        pConsumer.addVertex(pose, aX, iY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 0.0F, -1.0F);
-        pConsumer.addVertex(pose, iX, aY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 1.0F, 0.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, aY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 1.0F, 0.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, iY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 1.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, aY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 1.0F, 0.0F);
-        pConsumer.addVertex(pose, aX, aY, iZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 0.0F, 1.0F);
-        pConsumer.addVertex(pose, aX, aY, aZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, 0.0F, 0.0F, 1.0F);
+        pConsumer.vertex(pose.pose(), iX, iY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 1.0F, 0.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, iY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 1.0F, 0.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, iY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, aY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, iY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 0.0F, 1.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, iY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 0.0F, 1.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, iY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, aY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, aY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), -1.0F, 0.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, aY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), -1.0F, 0.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, aY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 0.0F, 1.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, aY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 0.0F, 1.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, aY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, -1.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, iY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, -1.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, iY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 1.0F, 0.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, iY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 1.0F, 0.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, iY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 0.0F, -1.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, iY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 0.0F, -1.0F).endVertex();
+        pConsumer.vertex(pose.pose(), iX, aY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 1.0F, 0.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, aY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 1.0F, 0.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, iY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, aY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, aY, iZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 0.0F, 1.0F).endVertex();
+        pConsumer.vertex(pose.pose(), aX, aY, aZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), 0.0F, 0.0F, 1.0F).endVertex();
     }
 
     public static void renderBox(PoseStack pPoseStack, VertexConsumer pConsumer, AABB box, float pRed, float pGreen, float pBlue, float pAlpha) {
@@ -138,8 +138,8 @@ public final class DebugRenderHelper {
         normal.sub(new Vector3f(maxX, maxY, maxZ));
         normal.normalize();
 
-        pConsumer.addVertex(pose, minX, minY, minZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, normal.x(), normal.y(), normal.z());
-        pConsumer.addVertex(pose, maxX, maxY, maxZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, normal.x(), normal.y(), normal.z());
+        pConsumer.vertex(pose.pose(), minX, minY, minZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), normal.x(), normal.y(), normal.z()).endVertex();
+        pConsumer.vertex(pose.pose(), maxX, maxY, maxZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), normal.x(), normal.y(), normal.z()).endVertex();
     }
 
     public static void renderLine(PoseStack pPoseStack, VertexConsumer pConsumer, double pMinX, double pMinY, double pMinZ, double pMaxX, double pMaxY, double pMaxZ, float r1, float g1, float b1, float a1, float r2, float g2, float b2, float a2) {
@@ -154,8 +154,8 @@ public final class DebugRenderHelper {
         normal.sub(new Vector3f(maxX, maxY, maxZ));
         normal.normalize();
 
-        pConsumer.addVertex(pose, minX, minY, minZ).setColor(r1, g1, b1, a1).setNormal(pose, normal.x(), normal.y(), normal.z());
-        pConsumer.addVertex(pose, maxX, maxY, maxZ).setColor(r2, g2, b2, a2).setNormal(pose, normal.x(), normal.y(), normal.z());
+        pConsumer.vertex(pose.pose(), minX, minY, minZ).color(r1, g1, b1, a1).normal(pose.normal(), normal.x(), normal.y(), normal.z()).endVertex();
+        pConsumer.vertex(pose.pose(), maxX, maxY, maxZ).color(r2, g2, b2, a2).normal(pose.normal(), normal.x(), normal.y(), normal.z()).endVertex();
     }
 
     public static void renderLine(PoseStack.Pose pose, VertexConsumer pConsumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float pRed, float pGreen, float pBlue, float pAlpha) {
@@ -163,7 +163,7 @@ public final class DebugRenderHelper {
         normal.sub(new Vector3f(maxX, maxY, maxZ));
         normal.normalize();
 
-        pConsumer.addVertex(pose, minX, minY, minZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, normal.x(), normal.y(), normal.z());
-        pConsumer.addVertex(pose, maxX, maxY, maxZ).setColor(pRed, pGreen, pBlue, pAlpha).setNormal(pose, normal.x(), normal.y(), normal.z());
+        pConsumer.vertex(pose.pose(), minX, minY, minZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), normal.x(), normal.y(), normal.z()).endVertex();
+        pConsumer.vertex(pose.pose(), maxX, maxY, maxZ).color(pRed, pGreen, pBlue, pAlpha).normal(pose.normal(), normal.x(), normal.y(), normal.z()).endVertex();
     }
 }

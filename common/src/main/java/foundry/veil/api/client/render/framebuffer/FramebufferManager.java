@@ -38,7 +38,7 @@ import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER;
  */
 public class FramebufferManager extends CodecReloadListener<FramebufferDefinition> implements NativeResource {
 
-    private static final ResourceLocation MAIN = ResourceLocation.withDefaultNamespace("main");
+    private static final ResourceLocation MAIN = new ResourceLocation("main");
 
     public static final Codec<ResourceLocation> FRAMEBUFFER_CODEC = Codec.STRING.comapFlatMap(name -> {
         try {

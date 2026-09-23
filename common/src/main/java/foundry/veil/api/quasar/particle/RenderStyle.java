@@ -1,8 +1,9 @@
 package foundry.veil.api.quasar.particle;
 
+import foundry.veil.impl.client.render.BackportRenderHelper;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.serialization.Codec;
 import foundry.veil.api.client.render.VeilRenderSystem;
@@ -100,7 +101,7 @@ public abstract class RenderStyle implements NativeResource {
             return;
         }
 
-        RenderType renderType = particles.getFirst().getRenderData().getRenderType();
+        RenderType renderType = particles.get(0).getRenderData().getRenderType();
         if (renderType == null) {
             return;
         }
@@ -111,7 +112,7 @@ public abstract class RenderStyle implements NativeResource {
             return;
         }
 
-        RenderSystem.glBindBuffer(GL_ARRAY_BUFFER, this.instanceVBO);
+        GlStateManager._glBindBuffer(GL_ARRAY_BUFFER, this.instanceVBO);
 
         if (visibleParticles.size() > this.maxParticles) {
             if (this.maxParticles < 100) {
@@ -179,7 +180,7 @@ public abstract class RenderStyle implements NativeResource {
      * @return The MeshData to use for each particle.
      * @since 4.4.0
      */
-    protected abstract MeshData createMesh();
+    protected abstract BufferBuilder.RenderedBuffer createMesh();
 
     /**
      * Set up the vertex attribute arrays to use for each particle.
@@ -227,19 +228,18 @@ public abstract class RenderStyle implements NativeResource {
         }
 
         @Override
-        protected MeshData createMesh() {
-            BufferBuilder builder = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.QUADS, VeilVertexFormat.QUASAR_PARTICLE);
+        protected BufferBuilder.RenderedBuffer createMesh() {
+            BufferBuilder builder = BackportRenderHelper.begin(RenderSystem.renderThreadTesselator(), VertexFormat.Mode.QUADS, VeilVertexFormat.QUASAR_PARTICLE);
 
             for (int i = 0; i < 6; i++) {
                 for (int j = 0; j < 4; j++) {
                     Vector3fc pos = CUBE_POSITIONS[i * 4 + j];
 
-                    builder.addVertex(pos.x(), pos.y(), pos.z());
-                    builder.setNormal(CUBE_NORMALS[i * 3], CUBE_NORMALS[i * 3 + 1], CUBE_NORMALS[i * 3 + 2]);
+                    builder.vertex(pos.x(), pos.y(), pos.z()).normal(CUBE_NORMALS[i * 3], CUBE_NORMALS[i * 3 + 1], CUBE_NORMALS[i * 3 + 2]).endVertex();
                 }
             }
 
-            return builder.buildOrThrow();
+            return BackportRenderHelper.buildOrThrow(builder);
         }
 
         @Override
@@ -317,17 +317,16 @@ public abstract class RenderStyle implements NativeResource {
         }
 
         @Override
-        protected MeshData createMesh() {
-            BufferBuilder builder = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.QUADS, VeilVertexFormat.QUASAR_PARTICLE);
+        protected BufferBuilder.RenderedBuffer createMesh() {
+            BufferBuilder builder = BackportRenderHelper.begin(RenderSystem.renderThreadTesselator(), VertexFormat.Mode.QUADS, VeilVertexFormat.QUASAR_PARTICLE);
 
             for (int j = 0; j < 4; j++) {
                 Vector3fc pos = PLANE_POSITIONS[j];
 
-                builder.addVertex(pos.x(), pos.y(), pos.z());
-                builder.setNormal(0, 0, -1);
+                builder.vertex(pos.x(), pos.y(), pos.z()).normal(0, 0, -1).endVertex();
             }
 
-            return builder.buildOrThrow();
+            return BackportRenderHelper.buildOrThrow(builder);
         }
 
         @Override

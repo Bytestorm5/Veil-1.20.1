@@ -2,12 +2,13 @@ package foundry.veil.api.client.render.vertex;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import foundry.veil.api.client.render.rendertype.VeilRenderType;
 import foundry.veil.api.client.render.shader.program.ShaderProgram;
+import foundry.veil.impl.client.render.BackportRenderHelper;
 import foundry.veil.impl.client.render.vertex.ARBVertexArray;
 import foundry.veil.impl.client.render.vertex.DSAVertexArray;
 import foundry.veil.impl.client.render.vertex.LegacyVertexArray;
@@ -151,7 +152,7 @@ public abstract class VertexArray implements NativeResource {
         renderType.setupRenderState();
         ShaderInstance shader = RenderSystem.getShader();
         if (shader != null) {
-            shader.setDefaultUniforms(this.drawMode, RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), Minecraft.getInstance().getWindow());
+            BackportRenderHelper.setDefaultUniforms(shader, this.drawMode, RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), Minecraft.getInstance().getWindow());
             shader.apply();
         }
     }
@@ -234,7 +235,7 @@ public abstract class VertexArray implements NativeResource {
      * @param meshData The data to upload
      * @param usage    The draw usage
      */
-    public void upload(MeshData meshData, DrawUsage usage) {
+    public void upload(BufferBuilder.RenderedBuffer meshData, DrawUsage usage) {
         this.upload(0, meshData, usage);
     }
 
@@ -245,17 +246,17 @@ public abstract class VertexArray implements NativeResource {
      * @param meshData       The data to upload
      * @param usage          The draw usage
      */
-    public void upload(int attributeStart, MeshData meshData, DrawUsage usage) {
-        try (meshData) {
+    public void upload(int attributeStart, BufferBuilder.RenderedBuffer meshData, DrawUsage usage) {
+        try {
             RenderSystem.assertOnRenderThread();
-            MeshData.DrawState drawState = meshData.drawState();
+            BufferBuilder.DrawState drawState = meshData.drawState();
             VertexArrayBuilder builder = this.editFormat();
 
             int vertexBuffer = this.getOrCreateBuffer(VERTEX_BUFFER);
             upload(vertexBuffer, meshData.vertexBuffer(), usage);
             builder.applyFrom(VERTEX_BUFFER, vertexBuffer, attributeStart, drawState.format());
 
-            ByteBuffer indexBuffer = meshData.indexBuffer();
+            ByteBuffer indexBuffer = BackportRenderHelper.indexBuffer(meshData);
             if (indexBuffer != null) {
                 this.uploadIndexBuffer(indexBuffer);
             } else {
@@ -265,6 +266,8 @@ public abstract class VertexArray implements NativeResource {
             this.indexCount = drawState.indexCount();
             this.indexType = IndexType.fromBlaze3D(drawState.indexType());
             this.drawMode = drawState.mode();
+        } finally {
+            meshData.release();
         }
     }
 
@@ -273,7 +276,7 @@ public abstract class VertexArray implements NativeResource {
      *
      * @param drawState The buffer draw state
      */
-    public void uploadIndexBuffer(MeshData.DrawState drawState) {
+    public void uploadIndexBuffer(BufferBuilder.DrawState drawState) {
         this.indexBuffer = RenderSystem.getSequentialBuffer(drawState.mode());
         this.indexBuffer.bind(drawState.indexCount());
     }

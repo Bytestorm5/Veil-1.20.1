@@ -41,7 +41,7 @@ public class ShaderImportProcessor implements ShaderPreProcessor {
             String importId = sanitizeLocation(directive.substring(ShaderImportProcessor.INCLUDE_KEY.length()).trim());
 
             try {
-                ctx.include(tree, ResourceLocation.parse(importId), IncludeOverloadStrategy.SOURCE);
+                ctx.include(tree, new ResourceLocation(importId), IncludeOverloadStrategy.SOURCE);
             } catch (ResourceLocationException e) {
                 throw new IOException("Invalid import: " + importId, e);
             }

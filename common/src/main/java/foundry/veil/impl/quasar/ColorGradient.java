@@ -168,7 +168,7 @@ public class ColorGradient implements EditorAttributeProvider {
             if (pointsView.isEmpty()) {
                 pointsView.add(new ColorGradient.RGBPoint(0.0f, Color.WHITE));
             } else {
-                pointsView.add(new ColorGradient.RGBPoint(Math.min(pointsView.getLast().percent() + 0.1f, 1.0f), Color.WHITE));
+                pointsView.add(new ColorGradient.RGBPoint(Math.min(pointsView.get(pointsView.size() - 1).percent() + 0.1f, 1.0f), Color.WHITE));
             }
             dirty = true;
         }
@@ -199,7 +199,7 @@ public class ColorGradient implements EditorAttributeProvider {
             if (alphaPointsView.isEmpty()) {
                 alphaPointsView.add(new ColorGradient.AlphaPoint(0.0f, 1.0f));
             } else {
-                alphaPointsView.add(new ColorGradient.AlphaPoint(Math.min(alphaPointsView.getLast().percent() + 0.1f, 1.0f), 1.0f));
+                alphaPointsView.add(new ColorGradient.AlphaPoint(Math.min(alphaPointsView.get(alphaPointsView.size() - 1).percent() + 0.1f, 1.0f), 1.0f));
             }
             dirty = true;
         }

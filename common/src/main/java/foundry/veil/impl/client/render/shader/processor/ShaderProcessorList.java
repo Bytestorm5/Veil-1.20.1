@@ -28,20 +28,20 @@ public class ShaderProcessorList implements VeilAddShaderPreProcessorsEvent.Regi
 
     @Override
     public void addPreprocessorFirst(ShaderPreProcessor processor, boolean modifyImports) {
-        this.processors.addFirst(processor);
+        this.processors.add(0, processor);
         this.processor = null;
         if (modifyImports) {
-            this.importProcessors.addFirst(processor);
+            this.importProcessors.add(0, processor);
             this.importProcessor = null;
         }
     }
 
     @Override
     public void addPreprocessor(ShaderPreProcessor processor, boolean modifyImports) {
-        this.processors.addLast(processor);
+        this.processors.add(processor);
         this.processor = null;
         if (modifyImports) {
-            this.importProcessors.addLast(processor);
+            this.importProcessors.add(processor);
             this.importProcessor = null;
         }
     }

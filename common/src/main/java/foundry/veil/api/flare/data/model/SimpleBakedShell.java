@@ -1,5 +1,6 @@
 package foundry.veil.api.flare.data.model;
 
+import foundry.veil.impl.client.render.BackportRenderHelper;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -31,14 +32,14 @@ public class SimpleBakedShell implements BakedShell {
     @Override
     public VertexArray getVertexArray() {
         if (this.vertexArray == null) {
-            BufferBuilder builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
+            BufferBuilder builder = BackportRenderHelper.begin(Tesselator.getInstance(), VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
 
             for (FlareBakedQuad quad : this.faces) {
                 quad.putBakedQuadInto(builder);
             }
 
             this.vertexArray = VertexArray.create();
-            this.vertexArray.upload(builder.buildOrThrow(), VertexArray.DrawUsage.STATIC);
+            this.vertexArray.upload(BackportRenderHelper.buildOrThrow(builder), VertexArray.DrawUsage.STATIC);
         }
         return this.vertexArray;
     }

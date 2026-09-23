@@ -26,7 +26,7 @@ import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 public sealed interface ShaderTextureSource permits LocationSource, FramebufferSource {
 
     Codec<ShaderTextureSource> CODEC = Codec.either(ResourceLocation.CODEC,
-                    Type.CODEC.<ShaderTextureSource>dispatch(ShaderTextureSource::type, Type::codec))
+                    Type.CODEC.<ShaderTextureSource>dispatch(ShaderTextureSource::type, type -> type.codec().codec()))
             .xmap(either -> either.map(name -> new LocationSource(name, null), right -> right),
                     source -> source instanceof LocationSource loc ? Either.left(loc.location()) : Either.right(source));
 

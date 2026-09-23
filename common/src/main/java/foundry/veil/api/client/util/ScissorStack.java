@@ -107,7 +107,10 @@ public final class ScissorStack {
         }
 
         float scale = (float) Minecraft.getInstance().getWindow().getGuiScale();
-        return this.regions.peek().containsPoint((int) (x * scale), (int) (y * scale));
+        ScreenRectangle region = this.regions.peek();
+        int pointX = (int) (x * scale);
+        int pointY = (int) (y * scale);
+        return pointX >= region.left() && pointX < region.right() && pointY >= region.top() && pointY < region.bottom();
     }
 
     /**

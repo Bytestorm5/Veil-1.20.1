@@ -35,7 +35,7 @@ public record FramebufferSource(
     ).apply(instance, (name, sampler, filter) -> {
         boolean depth = name.endsWith(":depth");
         String path = depth ? name.substring(0, name.length() - 6) : name;
-        ResourceLocation location = name.contains(":") ? ResourceLocation.parse(path) : ResourceLocation.fromNamespaceAndPath("temp", name);
+        ResourceLocation location = name.contains(":") ? new ResourceLocation(path) : new ResourceLocation("temp", name);
         return new FramebufferSource(location, depth ? 0 : sampler, depth, filter.orElse(null));
     }));
 

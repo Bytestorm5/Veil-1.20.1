@@ -46,7 +46,7 @@ public class Disc implements EmitterShape {
         for (int i = 0; i < 32; i++) {
             float x1 = (float) (x + Math.cos(Math.toRadians(angle)) * radius);
             float z1 = (float) (z + Math.sin(Math.toRadians(angle)) * radius);
-            consumer.addVertex(stack.last().pose(), x1, y, z1).setColor(0.15f, 0.15f, 1, 1).setNormal(0, 1, 0);
+            consumer.vertex(stack.last().pose(), x1, y, z1).color(0.15f, 0.15f, 1, 1).normal(0, 1, 0).endVertex();
             angle += angleStep;
         }
 

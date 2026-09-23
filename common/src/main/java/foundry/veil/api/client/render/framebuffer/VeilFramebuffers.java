@@ -13,7 +13,7 @@ public final class VeilFramebuffers {
     private VeilFramebuffers() {
     }
 
-    public static final ResourceLocation MAIN = ResourceLocation.withDefaultNamespace("main");
+    public static final ResourceLocation MAIN = new ResourceLocation("main");
     public static final ResourceLocation FIRST_PERSON = buffer("first_person");
     public static final ResourceLocation BLOOM = buffer("bloom");
     public static final ResourceLocation LIGHT = buffer("light");
@@ -26,7 +26,7 @@ public final class VeilFramebuffers {
     public static final ResourceLocation CLOUDS_TARGET = transparency("clouds");
 
     private static ResourceLocation transparency(String name) {
-        return ResourceLocation.withDefaultNamespace(name);
+        return new ResourceLocation(name);
     }
 
     private static ResourceLocation buffer(String name) {

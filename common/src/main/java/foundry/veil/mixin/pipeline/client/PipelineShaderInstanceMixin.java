@@ -1,8 +1,7 @@
 package foundry.veil.mixin.pipeline.client;
 
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -35,8 +34,16 @@ public abstract class PipelineShaderInstanceMixin {
     @Nullable
     public abstract Uniform getUniform(String name);
 
-    @Inject(method = "setDefaultUniforms", at = @At("TAIL"))
-    public void setDefaultUniforms(VertexFormat.Mode mode, Matrix4f projectionMatrix, Matrix4f frustrumMatrix, Window window, CallbackInfo ci) {
+    @Shadow
+    @Nullable
+    public Uniform MODEL_VIEW_MATRIX;
+
+    @Unique
+    private static final Matrix4f veil$MODEL_VIEW_MATRIX = new Matrix4f();
+
+    // 1.20.1 has no ShaderInstance#setDefaultUniforms, and the default uniforms are always set right before the shader is applied
+    @Inject(method = "apply", at = @At("HEAD"))
+    public void setDefaultUniforms(CallbackInfo ci) {
         Uniform renderTime = this.getUniform("VeilRenderTime");
         if (renderTime != null) {
             renderTime.set((System.currentTimeMillis() % 3_600_000) / 1000.0F);
@@ -44,7 +51,8 @@ public abstract class PipelineShaderInstanceMixin {
 
         Uniform normalMat = this.getUniform("NormalMat");
         if (normalMat != null) {
-            normalMat.set(projectionMatrix.normal(veil$NORMAL_MATRIX));
+            Matrix4f modelViewMatrix = this.MODEL_VIEW_MATRIX != null ? veil$MODEL_VIEW_MATRIX.set(this.MODEL_VIEW_MATRIX.getFloatBuffer()) : veil$MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
+            normalMat.set(modelViewMatrix.normal(veil$NORMAL_MATRIX));
         }
 
         ClientLevel level = Minecraft.getInstance().level;

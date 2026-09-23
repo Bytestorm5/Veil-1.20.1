@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import foundry.veil.api.client.render.CullFrustum;
@@ -19,6 +20,8 @@ import foundry.veil.api.client.render.framebuffer.VeilFramebuffers;
 import foundry.veil.api.client.render.rendertype.VeilRenderType;
 import foundry.veil.api.compat.SodiumCompat;
 import foundry.veil.ext.LevelRendererExtension;
+import foundry.veil.impl.client.render.BackportRenderHelper;
+import foundry.veil.mixin.rendertype.accessor.RenderTypeAccessor;
 import foundry.veil.impl.client.render.light.VoxelShadowGrid;
 import foundry.veil.impl.client.render.shader.VeilVanillaShaders;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -30,7 +33,7 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
+import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -81,14 +84,14 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
 
     @Shadow
     @Final
-    private ObjectArrayList<SectionRenderDispatcher.RenderSection> visibleSections;
+    private ObjectArrayList<LevelRenderer.RenderChunkInfo> renderChunksInFrustum;
 
     @Shadow
     @Final
     private Minecraft minecraft;
 
     @Shadow
-    protected abstract void renderSectionLayer(RenderType pRenderType, double pX, double pY, double pZ, Matrix4f pFrustrumMatrix, Matrix4f pProjectionMatrix);
+    protected abstract void renderChunkLayer(RenderType renderType, PoseStack poseStack, double camX, double camY, double camZ, Matrix4f projectionMatrix);
 
     @Unique
     private final Matrix4f veil$tempFrustum = new Matrix4f();
@@ -100,14 +103,14 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
         FramebufferStack.push(null);
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;getModelViewStack()Lorg/joml/Matrix4fStack;"), remap = false)
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;getModelViewStack()Lcom/mojang/blaze3d/vertex/PoseStack;"))
     public void loadFramebuffer(CallbackInfo ci) {
         FramebufferStack.pop(null);
     }
 
     @Inject(method = "prepareCullFrustum", at = @At("HEAD"))
-    public void veil$setupLevelCamera(Vec3 pos, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
-        VeilRenderSystem.renderer().getCameraMatrices().update(projectionMatrix, frustumMatrix, pos.x(), pos.y(), pos.z());
+    public void veil$setupLevelCamera(PoseStack poseStack, Vec3 pos, Matrix4f projectionMatrix, CallbackInfo ci) {
+        VeilRenderSystem.renderer().getCameraMatrices().update(projectionMatrix, poseStack.last().pose(), pos.x(), pos.y(), pos.z());
     }
 
     @Inject(method = "renderLevel", at = @At("TAIL"))
@@ -128,7 +131,7 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
     }
 
     // Add custom world border shader
-    @ModifyArg(method = "renderWorldBorder", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShader(Ljava/util/function/Supplier;)V", remap = false))
+    @ModifyArg(method = "renderWorldBorder", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShader(Ljava/util/function/Supplier;)V"))
     public Supplier<ShaderInstance> setWorldBorderShader(Supplier<ShaderInstance> supplier) {
         return VeilVanillaShaders::getWorldborder;
     }
@@ -162,9 +165,11 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
         VoxelShadowGrid.markBlockDirty(pos);
     }
 
-    @Inject(method = "setLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SectionOcclusionGraph;waitAndReset(Lnet/minecraft/client/renderer/ViewArea;)V"))
-    public void free(ClientLevel level, CallbackInfo ci) {
-        VeilRenderSystem.clearLevel();
+    @Inject(method = "setLevel", at = @At("HEAD"))
+    public void free(@Nullable ClientLevel level, CallbackInfo ci) {
+        if (level == null) {
+            VeilRenderSystem.clearLevel();
+        }
     }
 
     @Override
@@ -195,14 +200,14 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
             boolean rendered = false;
 
             profiler.push("render_" + VeilRenderType.getName(renderType));
-            boolean forward = !renderType.sortOnUpload();
-            ObjectListIterator<SectionRenderDispatcher.RenderSection> objectlistiterator = this.visibleSections.listIterator(forward ? 0 : this.visibleSections.size());
+            boolean forward = !((RenderTypeAccessor) renderType).isSortOnUpload();
+            ObjectListIterator<LevelRenderer.RenderChunkInfo> objectlistiterator = this.renderChunksInFrustum.listIterator(forward ? 0 : this.renderChunksInFrustum.size());
 
             ShaderInstance shaderInstance = null;
             Uniform chunkOffset = null;
 
-            ObjectList<SectionRenderDispatcher.RenderSection> validSections = new ObjectArrayList<>(this.visibleSections.size());
-            ObjectList<VertexBuffer> buffers = new ObjectArrayList<>(this.visibleSections.size());
+            ObjectList<ChunkRenderDispatcher.RenderChunk> validSections = new ObjectArrayList<>(this.renderChunksInFrustum.size());
+            ObjectList<VertexBuffer> buffers = new ObjectArrayList<>(this.renderChunksInFrustum.size());
             while (true) {
                 if (forward) {
                     if (!objectlistiterator.hasNext()) {
@@ -212,14 +217,14 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
                     break;
                 }
 
-                SectionRenderDispatcher.RenderSection section = forward ? objectlistiterator.next() : objectlistiterator.previous();
-                if (!section.getCompiled().isEmpty(renderType)) {
+                ChunkRenderDispatcher.RenderChunk section = (forward ? objectlistiterator.next() : objectlistiterator.previous()).chunk;
+                if (!section.getCompiledChunk().isEmpty(renderType)) {
                     // Don't set up the render state until something is actually rendered
                     if (!rendered) {
                         renderType.setupRenderState();
                         shaderInstance = RenderSystem.getShader();
                         if (shaderInstance != null) {
-                            shaderInstance.setDefaultUniforms(VertexFormat.Mode.QUADS, this.veil$tempFrustum, this.veil$tempProjection, window);
+                            BackportRenderHelper.setDefaultUniforms(shaderInstance, VertexFormat.Mode.QUADS, this.veil$tempFrustum, this.veil$tempProjection, window);
                             shaderInstance.apply();
                             chunkOffset = shaderInstance.CHUNK_OFFSET;
                         }
@@ -265,13 +270,13 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
                     profiler.push(name);
                     shaderInstance = RenderSystem.getShader();
                     if (shaderInstance != null) {
-                        shaderInstance.setDefaultUniforms(VertexFormat.Mode.QUADS, this.veil$tempFrustum, this.veil$tempProjection, window);
+                        BackportRenderHelper.setDefaultUniforms(shaderInstance, VertexFormat.Mode.QUADS, this.veil$tempFrustum, this.veil$tempProjection, window);
                         shaderInstance.apply();
                         chunkOffset = shaderInstance.CHUNK_OFFSET;
                     }
 
                     for (int j = 0; j < validSections.size(); j++) {
-                        SectionRenderDispatcher.RenderSection section = validSections.get(j);
+                        ChunkRenderDispatcher.RenderChunk section = validSections.get(j);
                         VertexBuffer vertexbuffer = buffers.get(j);
 
                         if (chunkOffset != null) {
@@ -297,12 +302,14 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
 
             VertexBuffer.unbind();
         } else {
-            this.renderSectionLayer(renderType, x, y, z, this.veil$tempFrustum.set(frustum), this.veil$tempProjection.set(projection));
+            PoseStack poseStack = new PoseStack();
+            poseStack.last().pose().set(frustum);
+            this.renderChunkLayer(renderType, poseStack, x, y, z, this.veil$tempProjection.set(projection));
         }
     }
 
-    @Inject(method = "renderSectionLayer", at = @At("TAIL"))
-    public void renderExtraSectionLayers(RenderType renderType, double x, double y, double z, Matrix4f frustrumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
+    @Inject(method = "renderChunkLayer", at = @At("TAIL"))
+    public void renderExtraSectionLayers(RenderType renderType, PoseStack poseStack, double x, double y, double z, Matrix4f projectionMatrix, CallbackInfo ci) {
         while (renderType instanceof VeilRenderType.RenderTypeWrapper wrapper) {
             renderType = wrapper.get();
         }
@@ -312,7 +319,7 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
         }
 
         for (RenderType layer : layeredRenderType.getLayers()) {
-            this.renderSectionLayer(layer, x, y, z, frustrumMatrix, projectionMatrix);
+            this.renderChunkLayer(layer, poseStack, x, y, z, projectionMatrix);
         }
     }
 
@@ -323,8 +330,8 @@ public abstract class PipelineLevelRendererMixin implements LevelRendererExtensi
         if (sodiumCompat != null) {
             sodiumCompat.markChunksDirty();
         } else {
-            for (SectionRenderDispatcher.RenderSection section : this.visibleSections) {
-                section.setDirty(false);
+            for (LevelRenderer.RenderChunkInfo info : this.renderChunksInFrustum) {
+                info.chunk.setDirty(false);
             }
         }
     }

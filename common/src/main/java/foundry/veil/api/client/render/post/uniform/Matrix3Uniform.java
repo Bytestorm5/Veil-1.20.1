@@ -1,5 +1,6 @@
 package foundry.veil.api.client.render.post.uniform;
 
+import foundry.veil.api.util.CodecUtil;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,7 +13,7 @@ import java.util.List;
 public record Matrix3Uniform(Matrix3fc value) implements UniformValue {
 
     public static final MapCodec<Matrix3Uniform> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.FLOAT.listOf(9, 9)
+            CodecUtil.listOf(Codec.FLOAT, 9, 9)
                     .<Matrix3fc>xmap(floats -> {
                         float[] values = new float[floats.size()];
                         for (int i = 0; i < floats.size(); i++) {

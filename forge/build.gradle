@@ -1,0 +1,91 @@
+plugins {
+    id 'net.neoforged.moddev.legacyforge'
+    id 'multiloader-loader'
+}
+
+legacyForge {
+    version = "${minecraft_version}-${forge_version}"
+    // Automatically enable forge AccessTransformers if the file exists
+    def at = project(':common').file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
+    }
+    parchment {
+        minecraftVersion = parchment_minecraft
+        mappingsVersion = parchment_version
+    }
+    runs {
+        configureEach {
+            systemProperty('forge.enabledGameTestNamespaces', mod_id)
+            ideName = "Forge ${it.name.capitalize()} (${project.path})"
+        }
+        client {
+            client()
+            gameDirectory = file('runs/client')
+        }
+        data {
+            data()
+        }
+        server {
+            server()
+            gameDirectory = file('runs/server')
+        }
+    }
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+// Every mixin config shipped by Veil. Forge 1.20.1 reads these from the jar manifest.
+def mixinConfigs = [
+        'command', 'debug', 'dynamicbuffer', 'fix', 'framebuffer', 'necromancer', 'network', 'performance',
+        'perspective', 'pipeline', 'quasar', 'registry', 'rendertype', 'resource', 'scheduler', 'shader',
+        'shader_recompile', 'forge'
+].collect { "${mod_id}.${it}.mixins.json" }
+
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    mixinConfigs.each { config it }
+}
+
+jar {
+    manifest.attributes([
+            'MixinConfigs': mixinConfigs.join(',')
+    ])
+}
+
+sourceSets.main.resources.srcDir 'src/generated/resources'
+
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+dependencies {
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.4.1"))
+
+    jarJar(api(additionalRuntimeClasspath("gg.moonflower:molang-compiler:$molang_compiler_version")))
+    jarJar(api(additionalRuntimeClasspath("io.github.ocelot:glsl-processor:${glsl_processor_version}")))
+
+    compileOnly("foundry.imguimc:imguimc-common-${imguimc_minecraft_version}:$imguimc_version") {
+        transitive = false
+    }
+    compileOnly "io.github.spair:imgui-java-binding:1.90.0"
+
+    modCompileOnly "maven.modrinth:embeddium:${embeddium_version}"
+    modCompileOnly "maven.modrinth:oculus:${oculus_version}"
+}

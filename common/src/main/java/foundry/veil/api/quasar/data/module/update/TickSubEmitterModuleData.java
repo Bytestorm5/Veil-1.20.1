@@ -44,7 +44,7 @@ public final class TickSubEmitterModuleData implements ParticleModuleData, Edito
 
         if (ImGui.inputTextWithHint("subemitter", "namespace:path", textInput)) {
             try {
-                ResourceLocation location = ResourceLocation.parse(textInput.get());
+                ResourceLocation location = new ResourceLocation(textInput.get());
                 QuasarParticles.registryAccess().registry(QuasarParticles.EMITTER).map(registry -> registry.get(location))
                         .ifPresent(data -> this.subEmitter = location);
             } catch (Exception ignored) {}

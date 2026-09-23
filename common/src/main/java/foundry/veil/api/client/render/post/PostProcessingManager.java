@@ -393,7 +393,7 @@ public class PostProcessingManager extends CodecReloadListener<CompositePostPipe
                     break;
                 }
             }
-            data.put(id, new CompositePostPipeline(pipelines.toArray(CompositePostPipeline[]::new), Collections.emptyMap(), Collections.emptyMap(), pipelines.getFirst().getRenderStage(), dynamicBuffers));
+            data.put(id, new CompositePostPipeline(pipelines.toArray(CompositePostPipeline[]::new), Collections.emptyMap(), Collections.emptyMap(), pipelines.get(0).getRenderStage(), dynamicBuffers));
         }
 
         return data;

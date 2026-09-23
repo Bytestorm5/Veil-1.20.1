@@ -1,5 +1,6 @@
 package foundry.veil.api.flare.data.effect;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -85,9 +86,9 @@ public final class FlareModel {
                 Optional.empty()
         );
 
-        Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
-        MATRIX4F.set(modelViewStack);
-        modelViewStack.mul(MODEL_TO_LOCAL_MATRIX);
+        PoseStack modelViewStack = RenderSystem.getModelViewStack();
+        MATRIX4F.set(modelViewStack.last().pose());
+        modelViewStack.mulPoseMatrix(MODEL_TO_LOCAL_MATRIX);
         RenderSystem.applyModelViewMatrix();
 
         VertexArray vertexArray = bakedShell.getVertexArray();
@@ -103,7 +104,7 @@ public final class FlareModel {
         }
         VertexArray.unbind();
 
-        modelViewStack.set(MATRIX4F);
+        modelViewStack.last().pose().set(MATRIX4F);
         RenderSystem.applyModelViewMatrix();
     }
 

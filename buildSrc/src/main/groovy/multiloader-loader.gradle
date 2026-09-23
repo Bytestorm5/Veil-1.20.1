@@ -45,20 +45,12 @@ tasks.named('sourcesJar', Jar) {
 }
 
 publishMods {
-    def isFabric = project.name == "fabric"
-    def isNeoforge = project.name == "neoforge"
     def changelogFile = rootProject.file("changelog.md")
 
     type = STABLE
 
-    if (isFabric) {
-        file = remapJar.archiveFile
-        additionalFiles.from(jar.archiveFile)
-        additionalFiles.from(sourcesJar.archiveFile)
-    } else {
-        file = jar.archiveFile
-        additionalFiles.from(sourcesJar.archiveFile)
-    }
+    file.set(project.provider { tasks.named("reobfJar", Jar).get().archiveFile.get() })
+    additionalFiles.from(sourcesJar.archiveFile)
 
     changelog = changelogFile.text
 
@@ -74,25 +66,15 @@ publishMods {
         clientRequired = true
         serverRequired = false
 
-        optional "sodium"
-        optional "imguimc"
-
-        incompatible "embeddium"
-
-        if (isNeoforge) {
-            incompatible "rubidium"
-        }
-
-        if (isFabric) {
-            requires "fabric-api"
-        }
+        optional "embeddium"
+        optional "oculus"
     }
 
     github {
         repository = "FoundryMC/Veil"
         accessToken = providers.environmentVariable("GITHUB_TOKEN")
         tagName = "mc$minecraft_version-$project.version-$project.name"
-        commitish = "1.21"
+        commitish = "1.20.1"
 
         file.unset()
         file.unsetConvention()
@@ -107,18 +89,8 @@ publishMods {
         projectId = "3KUWeVhG"
         minecraftVersions.add(minecraft_version)
 
-        optional "sodium"
-        optional "imguimc"
-
-        incompatible "embeddium"
-
-        if (isNeoforge) {
-            incompatible "rubidium"
-        }
-
-        if (isFabric) {
-            requires "fabric-api"
-        }
+        optional "embeddium"
+        optional "oculus"
     }
 
     dryRun = providers.environmentVariable("GITHUB_TOKEN").getOrNull() == null

@@ -1,33 +1,33 @@
 package foundry.veil.api.client.render.vertex;
 
+import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
-
-import java.util.Arrays;
-
-import static com.mojang.blaze3d.vertex.VertexFormatElement.*;
 
 public class VeilVertexFormat {
 
     public static final VertexFormatElement BONE_INDEX = register(0, VertexFormatElement.Type.USHORT, VertexFormatElement.Usage.GENERIC, 1);
 
     // todo: padding???
-    public static final VertexFormat SKINNED_MESH = VertexFormat.builder()
-            .add("Position", POSITION)
-            .add("Color", COLOR)
-            .add("UV0", UV0) // texture coordinates
-            .add("UV1", UV1) // lightmap coordinates
-            .add("UV2", UV2) // overlay coordinates
-            .add("Normal", NORMAL)
-            .add("BoneIndex", BONE_INDEX)
-            .build();
-    public static final VertexFormat QUASAR_PARTICLE = VertexFormat.builder()
-            .add("Position", POSITION)
-            .add("Normal", NORMAL)
-            .build();
+    public static final VertexFormat SKINNED_MESH = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
+            .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+            .put("Color", DefaultVertexFormat.ELEMENT_COLOR)
+            .put("UV0", DefaultVertexFormat.ELEMENT_UV0) // texture coordinates
+            .put("UV1", DefaultVertexFormat.ELEMENT_UV1) // lightmap coordinates
+            .put("UV2", DefaultVertexFormat.ELEMENT_UV2) // overlay coordinates
+            .put("Normal", DefaultVertexFormat.ELEMENT_NORMAL)
+            .put("BoneIndex", BONE_INDEX)
+            .build());
+    public static final VertexFormat QUASAR_PARTICLE = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
+            .put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+            .put("Normal", DefaultVertexFormat.ELEMENT_NORMAL)
+            .build());
 
     /**
-     * Registers a new vertex format element by assigning it to the next open ID, expanding the array if necessary.
+     * Creates a new vertex format element.
+     * <p>
+     * On 1.21 elements are registered into a global id table. 1.20.1 has no such table, so this simply creates the element.
      *
      * @param index The index of the element
      * @param type  The type of data to store
@@ -36,13 +36,6 @@ public class VeilVertexFormat {
      * @return A new element
      */
     public static VertexFormatElement register(int index, VertexFormatElement.Type type, VertexFormatElement.Usage usage, int count) {
-        for (int i = 0; i < VertexFormatElement.BY_ID.length; i++) {
-            if (VertexFormatElement.BY_ID[i] == null) {
-                return VertexFormatElement.register(i, index, type, usage, count);
-            }
-        }
-
-        VertexFormatElement.BY_ID = Arrays.copyOf(VertexFormatElement.BY_ID, VertexFormatElement.BY_ID.length + 1);
-        return VertexFormatElement.register(VertexFormatElement.BY_ID.length - 2, index, type, usage, count);
+        return new VertexFormatElement(index, type, usage, count);
     }
 }

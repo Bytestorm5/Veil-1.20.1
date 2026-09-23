@@ -1,7 +1,9 @@
 package foundry.veil.platform;
 
+import net.minecraft.server.MinecraftServer;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.network.PacketListener;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import foundry.veil.backport.network.protocol.common.custom.CustomPacketPayload;
 
 /**
  * Manages common platform-specific features.
@@ -48,8 +50,19 @@ public interface VeilPlatform {
      */
     boolean hasChannel(PacketListener listener, CustomPacketPayload.Type<?> type);
 
+    /**
+     * @return Whether the game is running on a physical client
+     */
+    boolean isClient();
+
+    /**
+     * @return The currently running server, or <code>null</code> if there is no server running in this game instance
+     */
+    @Nullable MinecraftServer getServer();
+
     enum PlatformType {
         NEOFORGE("NeoForge", "forge"),
+        FORGE("Forge", "forge"),
         FABRIC("Fabric", "fabric");
 
         private final String platformName;

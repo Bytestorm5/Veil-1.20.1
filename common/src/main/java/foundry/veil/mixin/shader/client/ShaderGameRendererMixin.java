@@ -33,7 +33,7 @@ public class ShaderGameRendererMixin {
         VeilRenderer renderer = VeilRenderSystem.renderer();
         ShaderInjectionManager injectionManager = renderer.getShaderInjectionManager();
 
-        ResourceLocation target = ResourceLocation.fromNamespaceAndPath(targetName.getNamespace(), "shaders/core/" + targetName.getPath());
+        ResourceLocation target = new ResourceLocation(targetName.getNamespace(), "shaders/core/" + targetName.getPath());
         ResourceLocation replacementId = injectionManager.getReplacement(target);
         if (replacementId == null) {
             Veil.LOGGER.debug("No replacement found for {}", name);

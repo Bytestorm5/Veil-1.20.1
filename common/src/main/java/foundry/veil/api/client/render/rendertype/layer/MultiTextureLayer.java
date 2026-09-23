@@ -1,5 +1,6 @@
 package foundry.veil.api.client.render.rendertype.layer;
 
+import foundry.veil.api.util.CodecUtil;
 import com.mojang.serialization.MapCodec;
 import foundry.veil.api.client.registry.RenderTypeLayerRegistry;
 import foundry.veil.api.client.render.rendertype.VeilRenderTypeBuilder;
@@ -9,8 +10,7 @@ import java.util.Arrays;
 
 public record MultiTextureLayer(TextureLayer[] textures) implements RenderTypeLayer {
 
-    public static final MapCodec<MultiTextureLayer> CODEC = TextureLayer.CODEC.codec()
-            .listOf(2, 12)
+    public static final MapCodec<MultiTextureLayer> CODEC = CodecUtil.listOf(TextureLayer.CODEC.codec(), 2, 12)
             .fieldOf("textures")
             .xmap(textures -> new MultiTextureLayer(textures.toArray(TextureLayer[]::new)),
                     layer -> Arrays.asList(layer.textures));

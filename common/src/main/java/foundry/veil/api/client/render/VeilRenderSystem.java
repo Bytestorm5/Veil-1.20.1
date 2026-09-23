@@ -492,7 +492,7 @@ public final class VeilRenderSystem {
      */
     public static void endLastBatch(MultiBufferSource.BufferSource source, String name) {
         if (source instanceof PipelineBufferSourceAccessor accessor) {
-            RenderType renderType = accessor.getLastSharedType();
+            RenderType renderType = accessor.getLastState().orElse(null);
             if (renderType != null && VeilRenderType.getName(renderType).equals(name)) {
                 source.endLastBatch();
             }
@@ -507,7 +507,7 @@ public final class VeilRenderSystem {
      */
     public static void endLastBatch(MultiBufferSource.BufferSource source, RenderType renderType) {
         if (source instanceof PipelineBufferSourceAccessor accessor) {
-            RenderType lastSharedType = accessor.getLastSharedType();
+            RenderType lastSharedType = accessor.getLastState().orElse(null);
             if (lastSharedType != null && lastSharedType.equals(renderType)) {
                 source.endLastBatch();
             }

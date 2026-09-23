@@ -131,31 +131,31 @@ public class Trail {
 
     public void pushRotatedPoint(Vec3 point, Vec3 rotation) {
         if (this.timeout > 80 && this.timeout % 5 == 0 && !this.points.isEmpty()) {
-            this.points.removeLast();
-            this.rotations.removeLast();
+            this.points.remove(this.points.size() - 1);
+            this.rotations.remove(this.rotations.size() - 1);
             return;
         }
         if (this.points.isEmpty()) {
-            this.points.addFirst(point);
-            this.rotations.addFirst(rotation);
+            this.points.add(0, point);
+            this.rotations.add(0, rotation);
             return;
         }
-        if (this.points.getLast().distanceTo(point) < this.minDistance) {
+        if (this.points.get(this.points.size() - 1).distanceTo(point) < this.minDistance) {
             this.timeout++;
             return;
         }
         // test if point is same as last point
-        if (!this.points.isEmpty() && this.points.getLast().equals(point)) {
+        if (!this.points.isEmpty() && this.points.get(this.points.size() - 1).equals(point)) {
             this.timeout++;
             return;
         }
         this.timeout = 0;
-        this.points.addFirst(point);
-        this.rotations.addFirst(rotation);
+        this.points.add(0, point);
+        this.rotations.add(0, rotation);
 
         if (this.points.size() > this.length) {
-            this.points.removeLast();
-            this.rotations.removeLast();
+            this.points.remove(this.points.size() - 1);
+            this.rotations.remove(this.rotations.size() - 1);
         }
     }
 
@@ -247,8 +247,8 @@ public class Trail {
                 u = (float) i / (corners.length - 1);
             }
             Matrix4f matrix4f = stack.position();
-            consumer.addVertex(matrix4f, bottom.x(), bottom.y(), bottom.z()).setColor(r, g, b, a).setUv(u, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(0, 1, 0);
-            consumer.addVertex(matrix4f, top.x(), top.y(), top.z()).setColor(r, g, b, a).setUv(u, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(0, 1, 0);
+            consumer.vertex(matrix4f, bottom.x(), bottom.y(), bottom.z()).color(r, g, b, a).uv(u, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(0, 1, 0).endVertex();
+            consumer.vertex(matrix4f, top.x(), top.y(), top.z()).color(r, g, b, a).uv(u, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(light).normal(0, 1, 0).endVertex();
         }
     }
 }

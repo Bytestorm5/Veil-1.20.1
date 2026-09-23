@@ -1,11 +1,12 @@
 package foundry.veil.impl.network;
 
+import foundry.veil.backport.network.codec.VanillaStreamCodecs;
 import foundry.veil.Veil;
 import foundry.veil.api.util.EnumCodec;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import foundry.veil.backport.network.codec.ByteBufCodecs;
+import foundry.veil.backport.network.codec.StreamCodec;
+import foundry.veil.backport.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,7 +15,7 @@ public record ClientboundAddPostProcessingPacket(int priority, ResourceLocation 
     public static final StreamCodec<FriendlyByteBuf, ClientboundAddPostProcessingPacket> CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT,
             ClientboundAddPostProcessingPacket::priority,
-            ResourceLocation.STREAM_CODEC,
+            VanillaStreamCodecs.RESOURCE_LOCATION,
             ClientboundAddPostProcessingPacket::pipeline,
             ClientboundAddPostProcessingPacket::new
     );

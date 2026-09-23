@@ -77,7 +77,7 @@ public abstract class PipelineVertexBufferMixin implements VertexBufferExtension
         }
     }
 
-    @ModifyArg(method = "draw", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;drawElements(III)V", remap = false), index = 0)
+    @ModifyArg(method = "draw", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;drawElements(III)V"), index = 0)
     public int modifyDrawMode(int glMode) {
         return this.veil$getDrawMode(glMode);
     }

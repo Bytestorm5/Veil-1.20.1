@@ -7,8 +7,8 @@ import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
-import net.minecraft.network.VarInt;
-import net.minecraft.network.codec.StreamCodec;
+import foundry.veil.backport.network.codec.ByteBufCodecs;
+import foundry.veil.backport.network.codec.StreamCodec;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -38,8 +38,8 @@ public class EnumCodec<T extends Enum<?>> implements Codec<T> {
         this.valid = Arrays.stream(values).map(toString).collect(Collectors.joining(", "));
         this.toString = toString;
         this.ordinal = ordinal;
-        this.streamCodec = StreamCodec.of((buf, value) -> VarInt.write(buf, this.getIndex(value)), buf -> {
-            int i = VarInt.read(buf);
+        this.streamCodec = StreamCodec.of((buf, value) -> ByteBufCodecs.VAR_INT.encode(buf, this.getIndex(value)), buf -> {
+            int i = ByteBufCodecs.VAR_INT.decode(buf);
             if (i < 0 || i >= this.values.length) {
                 throw new DecoderException("Unknown " + this.name + " with index: " + i);
             }

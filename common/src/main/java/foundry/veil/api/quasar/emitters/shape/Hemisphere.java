@@ -48,8 +48,8 @@ public class Hemisphere implements EmitterShape {
                 Vector3f v1 = parametricSphere((float) Math.toRadians(i * 11.25f), (float) Math.toRadians(j * 11.25f), radius);
                 if (v1.z < -0.01) continue;
                 Vector3f v2 = parametricSphere((float) Math.toRadians((i + 1) * 11.25f), (float) Math.toRadians(j * 11.25f), radius);
-                consumer.addVertex(matrix4f, v1.x(), v1.y(), v1.z()).setColor(0.15f, 0.15f, 1, 1).setNormal(0, 1, 0);
-                consumer.addVertex(matrix4f, v2.x(), v2.y(), v2.z()).setColor(0.15f, 0.15f, 1, 1).setNormal(0, 1, 0);
+                consumer.vertex(matrix4f, v1.x(), v1.y(), v1.z()).color(0.15f, 0.15f, 1, 1).normal(0, 1, 0).endVertex();
+                consumer.vertex(matrix4f, v2.x(), v2.y(), v2.z()).color(0.15f, 0.15f, 1, 1).normal(0, 1, 0).endVertex();
             }
         }
 

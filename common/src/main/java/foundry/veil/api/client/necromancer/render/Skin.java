@@ -1,8 +1,9 @@
 package foundry.veil.api.client.necromancer.render;
 
+import foundry.veil.impl.client.render.BackportRenderHelper;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import foundry.veil.backport.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import foundry.veil.api.client.necromancer.Skeleton;
@@ -77,7 +78,7 @@ public class Skin implements NativeResource {
             this.instances = skeletons.size();
         }
 
-        Skeleton first = skeletons.getFirst();
+        Skeleton first = skeletons.get(0);
         int maxDepth = first.getMaxDepth();
         if (this.matrixStack == null || this.matrixStack.length < maxDepth) {
             this.matrixStack = new Matrix4x3f[maxDepth];
@@ -150,7 +151,7 @@ public class Skin implements NativeResource {
     private void render() {
         ShaderInstance shader = RenderSystem.getShader();
         if (shader != null) {
-            shader.setDefaultUniforms(VertexFormat.Mode.TRIANGLES, RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), Minecraft.getInstance().getWindow());
+            BackportRenderHelper.setDefaultUniforms(shader, VertexFormat.Mode.TRIANGLES, RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), Minecraft.getInstance().getWindow());
             shader.apply();
 
             Uniform uniform = shader.getUniform("NecromancerBoneCount");

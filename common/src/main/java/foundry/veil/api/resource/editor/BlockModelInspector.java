@@ -1,5 +1,7 @@
 package foundry.veil.api.resource.editor;
 
+import foundry.veil.impl.client.render.BackportRenderHelper;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import foundry.veil.Veil;
@@ -90,28 +92,28 @@ public class BlockModelInspector implements ResourceFileEditor<BlockModelResourc
                 Matrix4f projMat = new Matrix4f().perspective((float) Math.toRadians(40.0), aspect, 0.3f, 1000.0f);
                 Matrix4f modelView = new Matrix4f().mul(viewMatrix);
 
-                BufferBuilder builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
+                BufferBuilder builder = BackportRenderHelper.begin(Tesselator.getInstance(), VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
 
                 for (BakedQuad quad : quads) {
-                    builder.putBulkData(POSE, quad, 1.0F, 1.0F, 1.0F, 1.0F, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+                    builder.putBulkData(POSE, quad, 1.0F, 1.0F, 1.0F, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
                 }
 
                 // draw!
-                MeshData data = builder.build();
+                BufferBuilder.RenderedBuffer data = BackportRenderHelper.build(builder);
 
                 if (data != null) {
                     RenderType renderType = RenderType.translucent();
-                    Matrix4fStack stack = RenderSystem.getModelViewStack();
+                    PoseStack stack = RenderSystem.getModelViewStack();
 
-                    stack.pushMatrix();
-                    stack.set(modelView);
+                    stack.pushPose();
+                    stack.last().pose().set(modelView);
                     RenderSystem.applyModelViewMatrix();
                     RenderSystem.backupProjectionMatrix();
                     RenderSystem.setProjectionMatrix(projMat, VertexSorting.ORTHOGRAPHIC_Z);
 
-                    renderType.draw(data);
+                    BackportRenderHelper.draw(renderType, data);
 
-                    stack.popMatrix();
+                    stack.popPose();
                     RenderSystem.restoreProjectionMatrix();
                     RenderSystem.applyModelViewMatrix();
                     renderType.clearRenderState();
@@ -158,10 +160,10 @@ public class BlockModelInspector implements ResourceFileEditor<BlockModelResourc
             for (BlockElement blockelement : elements) {
                 for (Direction direction : blockelement.faces.keySet()) {
                     BlockElementFace blockelementface = blockelement.faces.get(direction);
-                    Material material = unbaked.getMaterial(blockelementface.texture());
+                    Material material = unbaked.getMaterial(blockelementface.texture);
                     TextureAtlasSprite sprite = client.getTextureAtlas(material.atlasLocation()).apply(material.texture());
 
-                    quads.add(FACE_BAKERY.bakeQuad(blockelement.from, blockelement.to, blockelementface, sprite, direction, BlockModelRotation.X0_Y0, blockelement.rotation, blockelement.shade));
+                    quads.add(FACE_BAKERY.bakeQuad(blockelement.from, blockelement.to, blockelementface, sprite, direction, BlockModelRotation.X0_Y0, blockelement.rotation, blockelement.shade, Veil.veilPath("block_model_inspector")));
                 }
             }
         } catch (Exception e) {

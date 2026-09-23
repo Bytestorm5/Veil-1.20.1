@@ -2,6 +2,7 @@ package foundry.veil.api.client.render.vertex;
 
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
+import foundry.veil.impl.client.render.BackportRenderHelper;
 import foundry.veil.api.client.render.VeilRenderSystem;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -73,24 +74,27 @@ public interface VertexArrayBuilder {
         List<VertexFormatElement> elements = format.getElements();
         for (int i = 0; i < elements.size(); i++) {
             VertexFormatElement element = elements.get(i);
-            VertexFormatElement.Usage usage = element.usage();
+            VertexFormatElement.Usage usage = element.getUsage();
+            if (usage == VertexFormatElement.Usage.PADDING) {
+                continue;
+            }
 
-            if (usage == VertexFormatElement.Usage.UV && element.type() != VertexFormatElement.Type.FLOAT) {
+            if (usage == VertexFormatElement.Usage.UV && element.getType() != VertexFormatElement.Type.FLOAT) {
                 this.setVertexIAttribute(
                         attributeStart + i,
                         bufferIndex,
-                        element.count(),
-                        DataType.fromType(element.type()),
-                        format.getOffset(element)
+                        element.getCount(),
+                        DataType.fromType(element.getType()),
+                        BackportRenderHelper.getOffset(format, i)
                 );
             } else {
                 this.setVertexAttribute(
                         attributeStart + i,
                         bufferIndex,
-                        element.count(),
-                        DataType.fromType(element.type()),
+                        element.getCount(),
+                        DataType.fromType(element.getType()),
                         usage == VertexFormatElement.Usage.NORMAL || usage == VertexFormatElement.Usage.COLOR,
-                        format.getOffset(element)
+                        BackportRenderHelper.getOffset(format, i)
                 );
             }
         }

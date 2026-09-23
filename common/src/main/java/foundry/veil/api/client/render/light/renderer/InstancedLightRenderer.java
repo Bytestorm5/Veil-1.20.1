@@ -1,7 +1,8 @@
 package foundry.veil.api.client.render.light.renderer;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import foundry.veil.api.client.render.CullFrustum;
 import foundry.veil.api.client.render.light.InstancedLightData;
 import foundry.veil.api.client.render.light.data.LightData;
@@ -52,7 +53,7 @@ public abstract class InstancedLightRenderer<T extends LightData & InstancedLigh
         this.lastVisibleLights = new ArrayList<>();
         this.vertexArray = VertexArray.create();
 
-        MeshData mesh = this.createMesh();
+        BufferBuilder.RenderedBuffer mesh = this.createMesh();
         this.vertexArray.upload(mesh, VertexArray.DrawUsage.STATIC);
         this.instancedVbo = this.vertexArray.getOrCreateBuffer(2);
 
@@ -64,7 +65,7 @@ public abstract class InstancedLightRenderer<T extends LightData & InstancedLigh
     /**
      * @return The mesh data each instanced light will be rendered with use
      */
-    protected abstract MeshData createMesh();
+    protected abstract BufferBuilder.RenderedBuffer createMesh();
 
     /**
      * Sets up the instanced buffer state.
@@ -173,7 +174,7 @@ public abstract class InstancedLightRenderer<T extends LightData & InstancedLigh
             return;
         }
 
-        RenderSystem.glBindBuffer(GL_ARRAY_BUFFER, this.instancedVbo);
+        GlStateManager._glBindBuffer(GL_ARRAY_BUFFER, this.instancedVbo);
 
         boolean resized = false;
 

@@ -1,5 +1,6 @@
 package foundry.veil.impl.client.editor;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import foundry.veil.Veil;
 import foundry.veil.api.client.editor.SingleWindowInspector;
@@ -346,7 +347,7 @@ public class ShaderInspector extends SingleWindowInspector implements ResourceMa
 
                             ShaderUniformCache.UniformBlock block = entry.getValue();
                             int buffer = glGetIntegeri(GL_UNIFORM_BUFFER_BINDING, glGetActiveUniformBlocki(program, block.index(), GL_UNIFORM_BLOCK_BINDING));
-                            RenderSystem.glBindBuffer(GL_COPY_READ_BUFFER, buffer);
+                            GlStateManager._glBindBuffer(GL_COPY_READ_BUFFER, buffer);
                             ByteBuffer data = glMapBuffer(GL_COPY_READ_BUFFER, GL_READ_ONLY, block.size(), null);
                             for (ShaderUniformCache.Uniform field : block.fields()) {
                                 String name = field.name().startsWith(blockName) ? field.name().substring(blockName.length() + 1) : field.name();
@@ -378,7 +379,7 @@ public class ShaderInspector extends SingleWindowInspector implements ResourceMa
 
                                 ShaderUniformCache.StorageBlock block = entry.getValue();
                                 glGetProgramResourceiv(program, GL_SHADER_STORAGE_BLOCK, block.index(), properties, null, buffer);
-                                RenderSystem.glBindBuffer(GL_COPY_READ_BUFFER, buffer.get(0));
+                                GlStateManager._glBindBuffer(GL_COPY_READ_BUFFER, buffer.get(0));
                                 int size = block.array() ? glGetBufferParameteri(GL_COPY_READ_BUFFER, GL_BUFFER_SIZE) : block.size();
                                 ByteBuffer data = glMapBuffer(GL_COPY_READ_BUFFER, GL_READ_ONLY, size, null);
 
@@ -770,11 +771,11 @@ public class ShaderInspector extends SingleWindowInspector implements ResourceMa
                 Map<String, ShaderInstance> shaders = accessor.getShaders();
                 for (ShaderInstance shader : shaders.values()) {
                     String name = shader.getName().isBlank() ? Integer.toString(shader.getId()) : shader.getName();
-                    registry.accept(ResourceLocation.parse(name), shader.getId());
+                    registry.accept(new ResourceLocation(name), shader.getId());
                 }
 
                 ShaderInstance blitShader = accessor.getBlitShader();
-                registry.accept(ResourceLocation.parse(blitShader.getName()), blitShader.getId());
+                registry.accept(new ResourceLocation(blitShader.getName()), blitShader.getId());
             }
         },
         VANILLA_POST(Component.translatable("inspector.veil.shader.source.vanilla_post")) {
@@ -795,7 +796,7 @@ public class ShaderInspector extends SingleWindowInspector implements ResourceMa
                 List<PostPass> passes = ((DebugPostChainAccessor) chain).getPasses();
                 for (PostPass pass : passes) {
                     EffectInstance effect = pass.getEffect();
-                    registry.accept(ResourceLocation.parse(effect.getName()), effect.getId());
+                    registry.accept(new ResourceLocation(effect.getName()), effect.getId());
                 }
             }
         },
@@ -813,7 +814,7 @@ public class ShaderInspector extends SingleWindowInspector implements ResourceMa
             public void addShaders(ObjIntConsumer<ResourceLocation> registry) {
                 for (ShaderInstance shader : IrisCompat.INSTANCE.getLoadedShaders()) {
                     String name = shader.getName().isBlank() ? Integer.toString(shader.getId()) : shader.getName();
-                    registry.accept(ResourceLocation.parse(name), shader.getId());
+                    registry.accept(new ResourceLocation(name), shader.getId());
                 }
             }
         },
@@ -846,7 +847,7 @@ public class ShaderInspector extends SingleWindowInspector implements ResourceMa
                 }
 
                 for (int program : programs) {
-                    registry.accept(ResourceLocation.fromNamespaceAndPath("unknown", Integer.toString(program)), program);
+                    registry.accept(new ResourceLocation("unknown", Integer.toString(program)), program);
                 }
             }
         };

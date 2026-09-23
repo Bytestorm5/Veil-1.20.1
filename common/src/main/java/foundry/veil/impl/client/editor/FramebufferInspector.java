@@ -75,7 +75,7 @@ public class FramebufferInspector extends SingleWindowInspector {
 
                 this.framebuffers.clear();
                 for (String name : renderTargets.keySet()) {
-                    this.framebuffers.add(ResourceLocation.fromNamespaceAndPath("iris", name));
+                    this.framebuffers.add(new ResourceLocation("iris", name));
                 }
                 for (ResourceLocation id : this.framebuffers) {
                     this.drawRenderTarget(id, renderTargets.get(id.getPath()), renderTarget -> this.downloadRenderTarget = renderTarget);

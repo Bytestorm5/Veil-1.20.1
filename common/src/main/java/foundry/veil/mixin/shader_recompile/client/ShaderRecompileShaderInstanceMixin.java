@@ -224,10 +224,10 @@ public abstract class ShaderRecompileShaderInstanceMixin implements Shader, Shad
     @Override
     public Collection<ResourceLocation> veil$getShaderSources() {
         // TODO probably extra code for iris/sodium needed
-        ResourceLocation vertexProgramName = ResourceLocation.parse(this.vertexProgram.getName());
-        ResourceLocation fragmentProgramName = ResourceLocation.parse(this.fragmentProgram.getName());
-        ResourceLocation vertexPath = ResourceLocation.fromNamespaceAndPath(vertexProgramName.getNamespace(), "shaders/core/" + vertexProgramName.getPath() + Program.Type.VERTEX.getExtension());
-        ResourceLocation fragmentPath = ResourceLocation.fromNamespaceAndPath(fragmentProgramName.getNamespace(), "shaders/core/" + fragmentProgramName.getPath() + Program.Type.FRAGMENT.getExtension());
+        ResourceLocation vertexProgramName = new ResourceLocation(this.vertexProgram.getName());
+        ResourceLocation fragmentProgramName = new ResourceLocation(this.fragmentProgram.getName());
+        ResourceLocation vertexPath = new ResourceLocation(vertexProgramName.getNamespace(), "shaders/core/" + vertexProgramName.getPath() + Program.Type.VERTEX.getExtension());
+        ResourceLocation fragmentPath = new ResourceLocation(fragmentProgramName.getNamespace(), "shaders/core/" + fragmentProgramName.getPath() + Program.Type.FRAGMENT.getExtension());
         return List.of(vertexPath, fragmentPath);
     }
 

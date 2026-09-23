@@ -253,8 +253,8 @@ public final class VeilRenderProfilerImpl {
             }
 
             PathEntry current = ENTRIES.get(path);
-            paths.removeLast();
-            path = paths.isEmpty() ? "" : paths.getLast();
+            paths.remove(paths.size() - 1);
+            path = paths.isEmpty() ? "" : paths.get(paths.size() - 1);
 
             PathEntry previous = ENTRIES.get(path);
             if (current != null && current.tracking) {

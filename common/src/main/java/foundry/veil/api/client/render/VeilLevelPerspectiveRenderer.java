@@ -14,7 +14,7 @@ import foundry.veil.impl.client.render.perspective.LevelPerspectiveCamera;
 import foundry.veil.mixin.perspective.accessor.GameRendererAccessor;
 import foundry.veil.mixin.perspective.accessor.LevelRendererAccessor;
 import net.minecraft.client.Camera;
-import net.minecraft.client.DeltaTracker;
+import foundry.veil.backport.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
+import net.minecraft.Util;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -39,6 +40,8 @@ public final class VeilLevelPerspectiveRenderer {
 
     private static final LevelPerspectiveCamera CAMERA = new LevelPerspectiveCamera();
     private static final Matrix4f TRANSFORM = new Matrix4f();
+    private static final Matrix3f NORMAL = new Matrix3f();
+    private static final Matrix3f BACKUP_INVERSE_VIEW_ROTATION = new Matrix3f();
     private static final AtomicInteger ID = new AtomicInteger();
 
     private static final CameraMatrices BACKUP_CAMERA_MATRICES = new CameraMatrices();
@@ -105,8 +108,13 @@ public final class VeilLevelPerspectiveRenderer {
 
         CAMERA.setup(cameraPosition, cameraEntity, minecraft.level, cameraOrientation, renderDistance);
 
-        poseStack.mulPose(TRANSFORM.set(modelView));
+        PoseStack.Pose pose = poseStack.last();
+        poseStack.mulPoseMatrix(TRANSFORM.set(modelView));
+        pose.normal().mul(TRANSFORM.normal(NORMAL));
         poseStack.mulPose(CAMERA.rotation());
+
+        BACKUP_INVERSE_VIEW_ROTATION.set(RenderSystem.getInverseViewRotationMatrix());
+        RenderSystem.setInverseViewRotationMatrix(NORMAL.rotate(CAMERA.rotation()).invert());
 
         float backupRenderDistance = gameRenderer.getRenderDistance();
         accessor.setRenderDistance(renderDistance * 16.0F);
@@ -142,9 +150,9 @@ public final class VeilLevelPerspectiveRenderer {
         BACKUP_LIGHT0_POSITION.set(VeilRenderSystem.getLight0Direction());
         BACKUP_LIGHT1_POSITION.set(VeilRenderSystem.getLight1Direction());
 
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.identity();
+        PoseStack matrix4fstack = RenderSystem.getModelViewStack();
+        matrix4fstack.pushPose();
+        matrix4fstack.setIdentity();
         RenderSystem.applyModelViewMatrix();
 
         HitResult backupHitResult = minecraft.hitResult;
@@ -161,8 +169,8 @@ public final class VeilLevelPerspectiveRenderer {
         matrices.backup(BACKUP_CAMERA_MATRICES);
 
         try {
-            levelRenderer.prepareCullFrustum(new Vec3(cameraPosition.x(), cameraPosition.y(), cameraPosition.z()), poseStack.last().pose(), TRANSFORM);
-            levelRenderer.renderLevel(deltaTracker, false, CAMERA, gameRenderer, gameRenderer.lightTexture(), poseStack.last().pose(), TRANSFORM);
+            levelRenderer.prepareCullFrustum(poseStack, new Vec3(cameraPosition.x(), cameraPosition.y(), cameraPosition.z()), TRANSFORM);
+            levelRenderer.renderLevel(poseStack, deltaTracker.getGameTimeDeltaPartialTick(false), Util.getNanos(), false, CAMERA, gameRenderer, gameRenderer.lightTexture(), TRANSFORM);
             // Make sure all buffers have been finished
             bufferSource.endBatch();
             levelRenderer.doEntityOutline();
@@ -188,10 +196,11 @@ public final class VeilLevelPerspectiveRenderer {
             minecraft.crosshairPickEntity = backupCrosshairPickEntity;
             minecraft.hitResult = backupHitResult;
 
-            matrix4fstack.popMatrix();
+            matrix4fstack.popPose();
             RenderSystem.applyModelViewMatrix();
 
             RenderSystem.setShaderLights(BACKUP_LIGHT0_POSITION, BACKUP_LIGHT1_POSITION);
+            RenderSystem.setInverseViewRotationMatrix(BACKUP_INVERSE_VIEW_ROTATION);
             gameRenderer.resetProjectionMatrix(BACKUP_PROJECTION);
 
             IrisPipelineAccess.setPipeline(levelRenderer, backupPipeline);

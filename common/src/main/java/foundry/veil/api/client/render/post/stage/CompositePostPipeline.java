@@ -31,7 +31,7 @@ import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 public final class CompositePostPipeline implements PostPipeline {
 
     private static final Codec<Map<ResourceLocation, FramebufferDefinition>> FRAMEBUFFER_CODEC = Codec.unboundedMap(
-            Codec.STRING.xmap(name -> ResourceLocation.fromNamespaceAndPath("temp", name), ResourceLocation::getPath),
+            Codec.STRING.xmap(name -> new ResourceLocation("temp", name), ResourceLocation::getPath),
             FramebufferDefinition.CODEC);
     public static final Codec<CompositePostPipeline> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             PostPipeline.CODEC.listOf().fieldOf("stages").forGetter(pipeline -> Arrays.asList(pipeline.getStages())),

@@ -1,5 +1,6 @@
 package foundry.veil.api.flare.modifier;
 
+import foundry.veil.api.util.CodecUtil;
 import com.mojang.datafixers.util.Function6;
 import com.mojang.datafixers.util.Function7;
 import com.mojang.datafixers.util.Pair;
@@ -115,7 +116,7 @@ public abstract class PropertyModifier<T> {
 
     private static MapCodec<? extends Pair<Optional<List<MolangExpression>>, PropertyModifierMode>> pairCodecFromMode(PropertyModifierMode mode, int size) {
         if (mode == PropertyModifierMode.MOLANG) {
-            return Codec.mapPair(MolangExpressionCodec.CODEC.listOf(size, size).optionalFieldOf("molang"), MapCodec.unit(mode));
+            return Codec.mapPair(CodecUtil.listOf(MolangExpressionCodec.CODEC, size, size).optionalFieldOf("molang"), MapCodec.unit(mode));
         }
         return MapCodec.unit(Pair.of(Optional.empty(), mode));
     }
@@ -141,9 +142,9 @@ public abstract class PropertyModifier<T> {
                 Codec.STRING.optionalFieldOf("class").forGetter(PropertyModifier::optionalClazz),
                 Codec.STRING.fieldOf("controller").forGetter(PropertyModifier::inputControllerName),
                 Codec.STRING.fieldOf("property").forGetter(PropertyModifier::outputPropertyName),
-                StringRepresentable.fromValues(PropertyModifierMode::values).<Pair<Optional<List<MolangExpression>>, PropertyModifierMode>>dispatchMap("mode",
+                StringRepresentable.fromEnum(PropertyModifierMode::values).<Pair<Optional<List<MolangExpression>>, PropertyModifierMode>>dispatchMap("mode",
                         PropertyModifier::modeFromPair,
-                        mode -> pairCodecFromMode(mode, molangSize)
+                        mode -> pairCodecFromMode(mode, molangSize).codec()
                 ).forGetter(PropertyModifier::getPair)
 
         ).apply(instance, (name, clazz, controller, property, pair) -> factory.apply(name, clazz.orElse(null), controller, property, pair.getSecond(), pair.getFirst())));
@@ -155,9 +156,9 @@ public abstract class PropertyModifier<T> {
                 Codec.STRING.optionalFieldOf("class").forGetter(PropertyModifier::optionalClazz),
                 Codec.STRING.fieldOf("controller").forGetter(PropertyModifier::inputControllerName),
                 Codec.STRING.fieldOf("property").forGetter(PropertyModifier::outputPropertyName),
-                StringRepresentable.fromValues(PropertyModifierMode::values).<Pair<Optional<List<MolangExpression>>, PropertyModifierMode>>dispatchMap("mode",
+                StringRepresentable.fromEnum(PropertyModifierMode::values).<Pair<Optional<List<MolangExpression>>, PropertyModifierMode>>dispatchMap("mode",
                         PropertyModifier::modeFromPair,
-                        mode -> pairCodecFromMode(mode, molangSize)
+                        mode -> pairCodecFromMode(mode, molangSize).codec()
                 ).forGetter(PropertyModifier::getPair),
                 additionalCodec.forGetter(supplier)
 

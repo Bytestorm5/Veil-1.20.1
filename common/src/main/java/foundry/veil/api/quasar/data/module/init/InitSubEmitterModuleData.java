@@ -48,7 +48,7 @@ public final class InitSubEmitterModuleData implements ParticleModuleData, Edito
         ImString textInput = new ImString(this.subEmitter.toString());
 
         if (ImGui.inputTextWithHint("subemitter", "namespace:path", textInput)) {
-            ResourceLocation location = ResourceLocation.parse(textInput.get());
+            ResourceLocation location = new ResourceLocation(textInput.get());
             QuasarParticles.registryAccess().registry(QuasarParticles.EMITTER).map(registry -> registry.get(location))
                     .ifPresent(data -> this.subEmitter = location);
         }

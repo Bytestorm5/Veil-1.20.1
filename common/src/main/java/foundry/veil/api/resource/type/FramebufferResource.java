@@ -1,5 +1,6 @@
 package foundry.veil.api.resource.type;
 
+import foundry.veil.api.util.CodecUtil;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.DataResult;
@@ -38,7 +39,7 @@ public record FramebufferResource(VeilResourceInfo resourceInfo) implements Veil
             if (result.error().isPresent()) {
                 throw new JsonParseException(result.error().get().message());
             }
-            VeilRenderSystem.renderer().getFramebufferManager().setDefinition(FramebufferManager.FRAMEBUFFER_LISTER.fileToId(this.resourceInfo.location()), result.getOrThrow());
+            VeilRenderSystem.renderer().getFramebufferManager().setDefinition(FramebufferManager.FRAMEBUFFER_LISTER.fileToId(this.resourceInfo.location()), CodecUtil.getOrThrow(result));
         }
     }
 

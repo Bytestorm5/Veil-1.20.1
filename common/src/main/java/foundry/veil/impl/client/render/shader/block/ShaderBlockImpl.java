@@ -100,13 +100,13 @@ public abstract class ShaderBlockImpl<T> implements ShaderBlock<T> {
 
             @Override
             public void resize(int binding, int buffer, long size) {
-                RenderSystem.glBindBuffer(binding, buffer);
+                GlStateManager._glBindBuffer(binding, buffer);
                 glBufferData(binding, size, GL_DYNAMIC_DRAW);
             }
 
             @Override
             public void write(int binding, int buffer, ByteBuffer upload) {
-                RenderSystem.glBindBuffer(binding, buffer);
+                GlStateManager._glBindBuffer(binding, buffer);
                 glBufferSubData(binding, 0L, upload);
             }
         },

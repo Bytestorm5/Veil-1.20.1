@@ -385,7 +385,7 @@ public class ShaderManager implements PreparableReloadListener, Closeable {
                                 }
 
                                 return () -> {
-                                    ShaderProcessorList shaderProcessor = processorList.computeIfAbsent(Thread.currentThread().threadId(), id -> {
+                                    ShaderProcessorList shaderProcessor = processorList.computeIfAbsent(Thread.currentThread().getId(), id -> {
                                         ShaderProcessorList list = new ShaderProcessorList(resourceManager);
                                         this.addProcessors(list, resourceManager);
                                         return list;
