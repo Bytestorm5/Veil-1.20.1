@@ -1,1 +1,3 @@
+- Port Veil 4.3.2 to Minecraft 1.20.1 on Forge 47 (see PORTING-1.20.1.md)
+- Sodium and Iris compatibility now targets Embeddium and Oculus
 - Fix shader recompilation with iris

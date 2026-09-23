@@ -10,6 +10,9 @@ Veil is a sophisticated collection of tools and utilities designed to facilitate
 developers. Our goal is to enable more modern game-engine level content in Java Minecraft, pushing the boundaries of
 what is possible in modding.
 
+> **Minecraft 1.20.1 (Forge 47) port:** this branch backports Veil 4.3.2 to Forge 1.20.1.
+> See [PORTING-1.20.1.md](PORTING-1.20.1.md) for the build, backported 1.21 types and API differences.
+
 ## Features
 
 - **Colors**: Manage colors and use them with Themes.

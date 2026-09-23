@@ -22,6 +22,10 @@ legacyForge {
         client {
             client()
             gameDirectory = file('runs/client')
+            // Run with -PquickPlay=<world> to load straight into a singleplayer world
+            if (project.hasProperty('quickPlay')) {
+                programArguments.addAll('--quickPlaySingleplayer', project.property('quickPlay').toString())
+            }
         }
         data {
             data()
@@ -74,4 +78,10 @@ dependencies {
 
     modCompileOnly "maven.modrinth:embeddium:${embeddium_version}"
     modCompileOnly "maven.modrinth:oculus:${oculus_version}"
+
+    // Run with -PwithCompatMods to test the Embeddium and Oculus integration in the dev runs
+    if (project.hasProperty('withCompatMods')) {
+        modRuntimeOnly "maven.modrinth:embeddium:${embeddium_version}"
+        modRuntimeOnly "maven.modrinth:oculus:${oculus_version}"
+    }
 }
