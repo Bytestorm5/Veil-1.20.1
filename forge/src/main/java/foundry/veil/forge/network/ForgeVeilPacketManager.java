@@ -76,12 +76,17 @@ public class ForgeVeilPacketManager implements VeilPacketManager {
     @Override
     public <T extends CustomPacketPayload> void registerClientbound(CustomPacketPayload.Type<T> id, StreamCodec<? super RegistryFriendlyByteBuf, T> codec, PacketHandler<ClientPacketContext, T> handler, boolean optional) {
         VeilPayloadRegistry.registerClientbound(id, codec);
-        this.register(id, NetworkDirection.PLAY_TO_CLIENT, ForgeClientPacketContext::new, handler, optional);
+        this.register(id, NetworkDirection.PLAY_TO_CLIENT, ForgeVeilPacketManager::createClientContext, handler, optional);
     }
 
     @Override
     public <T extends CustomPacketPayload> void registerServerbound(CustomPacketPayload.Type<T> id, StreamCodec<? super RegistryFriendlyByteBuf, T> codec, PacketHandler<ServerPacketContext, T> handler, boolean optional) {
         VeilPayloadRegistry.registerServerbound(id, codec);
         this.register(id, NetworkDirection.PLAY_TO_SERVER, ForgeServerPacketContext::new, handler, optional);
+    }
+
+    // Typed as the common interface so the client-only implementation is never loaded on a dedicated server
+    private static ClientPacketContext createClientContext(NetworkEvent.Context context) {
+        return new ForgeClientPacketContext(context);
     }
 }

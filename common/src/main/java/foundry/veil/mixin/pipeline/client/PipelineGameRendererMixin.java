@@ -1,5 +1,8 @@
 package foundry.veil.mixin.pipeline.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import foundry.veil.Veil;
@@ -18,10 +21,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(GameRenderer.class)
 public class PipelineGameRendererMixin {
@@ -52,9 +53,11 @@ public class PipelineGameRendererMixin {
         VeilRenderSystem.setCameraBobOffset(this.veil$cameraBobOffset);
     }
 
-    @ModifyArgs(method = "bobView", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V"))
-    public void translateBob(Args args) {
-        this.veil$cameraBobOffset.sub(args.get(0), args.get(1), args.get(2));
+    // @ModifyArgs can't be used on Forge 1.20.1 because its synthetic argument classes can't be loaded under ModLauncher
+    @WrapOperation(method = "bobView", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V"))
+    public void translateBob(PoseStack instance, float x, float y, float z, Operation<Void> original) {
+        this.veil$cameraBobOffset.sub(x, y, z);
+        original.call(instance, x, y, z);
     }
 
     @Inject(method = "resize", at = @At(value = "TAIL"))
