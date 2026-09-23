@@ -1,6 +1,6 @@
 package foundry.veil.forge.compat.sodium;
 
-import net.caffeinemc.mods.sodium.client.gl.shader.uniform.GlUniform;
+import me.jellysquid.mods.sodium.client.gl.shader.uniform.GlUniform;
 import org.joml.Matrix3fc;
 import org.lwjgl.system.MemoryStack;
 

@@ -8,12 +8,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Set;
 
-@Mixin(IrisRenderingPipeline.class)
+@Mixin(value = IrisRenderingPipeline.class, remap = false)
 public interface IrisRenderingPipelineAccessor {
 
-    @Accessor(remap = false)
+    @Accessor
     RenderTargets getRenderTargets();
 
-    @Accessor(remap = false)
+    @Accessor
     Set<ShaderInstance> getLoadedShaders();
 }

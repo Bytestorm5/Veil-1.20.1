@@ -1,6 +1,6 @@
 package foundry.veil.forge.ext;
 
-import net.caffeinemc.mods.sodium.client.render.chunk.lists.ChunkRenderList;
+import me.jellysquid.mods.sodium.client.render.chunk.lists.ChunkRenderList;
 
 public interface RenderRegionExtension {
 

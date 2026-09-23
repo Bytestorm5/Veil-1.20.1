@@ -21,8 +21,9 @@ public class Veil {
 
     private static final VeilPlatform PLATFORM = ServiceLoader.load(VeilPlatform.class).findFirst().orElseThrow(() -> new RuntimeException("Veil expected platform implementation"));
 
-    public static final boolean SODIUM = PLATFORM.isModLoaded("sodium");
-    public static final boolean IRIS = PLATFORM.isModLoaded("iris");
+    // Forge 1.20.1 ships Sodium and Iris as their forks Embeddium and Oculus
+    public static final boolean SODIUM = PLATFORM.isModLoaded("embeddium");
+    public static final boolean IRIS = PLATFORM.isModLoaded("oculus");
     public static final boolean IMGUIMC = PLATFORM.isModLoaded("imguimc");
 
     static {

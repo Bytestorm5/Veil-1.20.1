@@ -47,6 +47,9 @@ public abstract class VeilMixinPlugin implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         for (String compat : COMPAT) {
             if (mixinClassName.startsWith(compat)) {
+                if (mixinClassName.startsWith(compat + ".iris")) {
+                    return Veil.IRIS;
+                }
                 return Veil.SODIUM ? !mixinClassName.startsWith(compat + ".vanilla") : !mixinClassName.startsWith(compat + ".sodium");
             }
         }
@@ -55,7 +58,12 @@ public abstract class VeilMixinPlugin implements IMixinConfigPlugin {
         }
         if (mixinClassName.startsWith("foundry.veil." + PACKAGE_NAME + ".mixin.compat")) {
             String[] parts = mixinClassName.split("\\.", 7);
-            return this.isModLoaded(parts[5]);
+            // The compat packages keep the upstream names, but on Forge 1.20.1 the mods are Embeddium and Oculus
+            return switch (parts[5]) {
+                case "sodium" -> Veil.SODIUM;
+                case "iris" -> Veil.IRIS;
+                default -> this.isModLoaded(parts[5]);
+            };
         }
         for (Map.Entry<String, Set<String>> entry : INCOMPATIBLE_MIXINS.entrySet()) {
             if (this.isModLoaded(entry.getKey()) && entry.getValue().contains(mixinClassName)) {

@@ -1,8 +1,8 @@
 package foundry.veil.forge.ext;
 
-import net.caffeinemc.mods.sodium.client.gl.shader.GlProgram;
-import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
-import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderOptions;
+import me.jellysquid.mods.sodium.client.gl.shader.GlProgram;
+import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
+import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkShaderOptions;
 
 import java.util.Map;
 

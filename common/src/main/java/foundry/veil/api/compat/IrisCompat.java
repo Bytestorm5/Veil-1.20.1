@@ -21,7 +21,7 @@ public interface IrisCompat {
      * Retrieves the compat instance. This will be <code>null</code> if iris is not installed.
      */
     @Nullable
-    IrisCompat INSTANCE = Veil.platform().isModLoaded("iris") ? ServiceLoader.load(IrisCompat.class).findFirst().orElse(null) : null;
+    IrisCompat INSTANCE = Veil.IRIS ? ServiceLoader.load(IrisCompat.class).findFirst().orElse(null) : null;
 
     /**
      * @return Whether Iris is loaded

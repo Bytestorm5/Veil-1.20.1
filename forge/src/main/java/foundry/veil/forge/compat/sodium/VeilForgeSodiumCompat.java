@@ -6,20 +6,21 @@ import foundry.veil.forge.ext.SodiumWorldRendererExtension;
 import foundry.veil.forge.mixin.compat.sodium.RenderSectionManagerAccessor;
 import foundry.veil.forge.mixin.compat.sodium.SodiumWorldRendererAccessor;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import net.caffeinemc.mods.sodium.client.gl.shader.GlProgram;
-import net.caffeinemc.mods.sodium.client.render.SodiumWorldRenderer;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
-import net.caffeinemc.mods.sodium.client.render.chunk.TaskQueueType;
-import net.caffeinemc.mods.sodium.client.render.chunk.lists.SortedRenderLists;
-import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkFogMode;
-import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
-import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderOptions;
-import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
+import me.jellysquid.mods.sodium.client.gl.shader.GlProgram;
+import me.jellysquid.mods.sodium.client.render.SodiumWorldRenderer;
+import me.jellysquid.mods.sodium.client.render.chunk.ChunkUpdateType;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionManager;
+import me.jellysquid.mods.sodium.client.render.chunk.lists.SortedRenderLists;
+import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkFogMode;
+import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
+import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkShaderOptions;
+import me.jellysquid.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +30,12 @@ import java.util.ArrayDeque;
 import java.util.EnumMap;
 import java.util.Map;
 
+/**
+ * Veil compat for Embeddium (the Forge 1.20.1 fork of Sodium 0.5).
+ * <p>
+ * The opaque objects exchanged through {@link #getSortedRenderLists()} and {@link #getTaskLists()} are Embeddium's
+ * {@link SortedRenderLists} and its rebuild queues ({@code Map<ChunkUpdateType, ArrayDeque<RenderSection>>}).
+ */
 public class VeilForgeSodiumCompat implements SodiumCompat {
 
     private static @NotNull StringBuilder getShaderName(ChunkShaderOptions options) {
@@ -38,7 +45,7 @@ public class VeilForgeSodiumCompat implements SodiumCompat {
         }
 
         TerrainRenderPass pass = options.pass();
-        if (pass.isTranslucent()) {
+        if (pass.isReverseOrder()) {
             name.append("_translucent");
         }
         if (pass.supportsFragmentDiscard()) {
@@ -47,43 +54,52 @@ public class VeilForgeSodiumCompat implements SodiumCompat {
         return name;
     }
 
-    @Override
-    public Object2IntMap<ResourceLocation> getLoadedShaders() {
+    private static Map<ChunkUpdateType, ArrayDeque<RenderSection>> createEmptyRebuildLists() {
+        Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists = new EnumMap<>(ChunkUpdateType.class);
+        for (ChunkUpdateType type : ChunkUpdateType.values()) {
+            rebuildLists.put(type, new ArrayDeque<>());
+        }
+        return rebuildLists;
+    }
+
+    private static @Nullable ShaderChunkRendererExtension getChunkRenderer() {
         SodiumWorldRenderer worldRenderer = SodiumWorldRenderer.instanceNullable();
         if (worldRenderer != null) {
-            RenderSectionManagerAccessor renderSectionManager = (RenderSectionManagerAccessor) ((SodiumWorldRendererAccessor) worldRenderer).getRenderSectionManager();
-            if (renderSectionManager != null && renderSectionManager.getChunkRenderer() instanceof ShaderChunkRendererExtension extension) {
-                Object2IntMap<ResourceLocation> shaders = new Object2IntArrayMap<>(extension.veil$getPrograms().size());
-
-                for (Map.Entry<ChunkShaderOptions, GlProgram<ChunkShaderInterface>> entry : extension.veil$getPrograms().entrySet()) {
-                    StringBuilder name = getShaderName(entry.getKey());
-                    shaders.put(new ResourceLocation("sodium", name.toString()), entry.getValue().handle());
-                }
-                return shaders;
+            RenderSectionManager renderSectionManager = ((SodiumWorldRendererAccessor) worldRenderer).getRenderSectionManager();
+            if (renderSectionManager != null && ((RenderSectionManagerAccessor) renderSectionManager).getChunkRenderer() instanceof ShaderChunkRendererExtension extension) {
+                return extension;
             }
+        }
+        return null;
+    }
+
+    @Override
+    public Object2IntMap<ResourceLocation> getLoadedShaders() {
+        ShaderChunkRendererExtension extension = getChunkRenderer();
+        if (extension != null) {
+            Object2IntMap<ResourceLocation> shaders = new Object2IntArrayMap<>(extension.veil$getPrograms().size());
+            for (Map.Entry<ChunkShaderOptions, GlProgram<ChunkShaderInterface>> entry : extension.veil$getPrograms().entrySet()) {
+                StringBuilder name = getShaderName(entry.getKey());
+                shaders.put(new ResourceLocation("sodium", name.toString()), entry.getValue().handle());
+            }
+            return shaders;
         }
         return Object2IntMaps.emptyMap();
     }
 
     @Override
     public void recompile() {
-        SodiumWorldRenderer worldRenderer = SodiumWorldRenderer.instanceNullable();
-        if (worldRenderer != null) {
-            RenderSectionManagerAccessor renderSectionManager = (RenderSectionManagerAccessor) ((SodiumWorldRendererAccessor) worldRenderer).getRenderSectionManager();
-            if (renderSectionManager != null && renderSectionManager.getChunkRenderer() instanceof ShaderChunkRendererExtension extension) {
-                extension.veil$recompile();
-            }
+        ShaderChunkRendererExtension extension = getChunkRenderer();
+        if (extension != null) {
+            extension.veil$recompile();
         }
     }
 
     @Override
     public void setActiveBuffers(int activeBuffers) {
-        SodiumWorldRenderer worldRenderer = SodiumWorldRenderer.instanceNullable();
-        if (worldRenderer != null) {
-            RenderSectionManagerAccessor renderSectionManager = (RenderSectionManagerAccessor) ((SodiumWorldRendererAccessor) worldRenderer).getRenderSectionManager();
-            if (renderSectionManager != null && renderSectionManager.getChunkRenderer() instanceof ShaderChunkRendererExtension extension) {
-                extension.veil$setActiveBuffers(activeBuffers);
-            }
+        ShaderChunkRendererExtension extension = getChunkRenderer();
+        if (extension != null) {
+            extension.veil$setActiveBuffers(activeBuffers);
         }
     }
 
@@ -92,10 +108,11 @@ public class VeilForgeSodiumCompat implements SodiumCompat {
         SodiumWorldRenderer worldRenderer = SodiumWorldRenderer.instanceNullable();
         if (worldRenderer != null) {
             RenderSectionManager renderSectionManager = ((SodiumWorldRendererAccessor) worldRenderer).getRenderSectionManager();
-
             if (renderSectionManager != null) {
                 Long2ReferenceMap<RenderSection> map = ((RenderSectionManagerAccessor) renderSectionManager).getSectionByPosition();
-                for (LongIterator iterator = map.keySet().iterator(); iterator.hasNext(); ) {
+                // Copy the keys first since scheduling a rebuild can modify the section map
+                LongArrayList positions = new LongArrayList(map.keySet());
+                for (LongIterator iterator = positions.iterator(); iterator.hasNext(); ) {
                     long sectionPos = iterator.nextLong();
                     renderSectionManager.scheduleRebuild(SectionPos.x(sectionPos), SectionPos.y(sectionPos), SectionPos.z(sectionPos), true);
                 }
@@ -125,14 +142,9 @@ public class VeilForgeSodiumCompat implements SodiumCompat {
     public Object getTaskLists() {
         SodiumWorldRenderer worldRenderer = SodiumWorldRenderer.instanceNullable();
         if (worldRenderer != null) {
-            return ((SodiumWorldRendererExtension) worldRenderer).veil$getTaskLists();
+            return ((SodiumWorldRendererExtension) worldRenderer).veil$getRebuildLists();
         }
-
-        Map<TaskQueueType, ArrayDeque<?>> taskLists = new EnumMap<>(TaskQueueType.class);
-        for (TaskQueueType type : TaskQueueType.values()) {
-            taskLists.put(type, new ArrayDeque<>());
-        }
-        return taskLists;
+        return createEmptyRebuildLists();
     }
 
     @SuppressWarnings("unchecked")
@@ -140,15 +152,8 @@ public class VeilForgeSodiumCompat implements SodiumCompat {
     public void setTaskList(@Nullable Object taskList) {
         SodiumWorldRenderer worldRenderer = SodiumWorldRenderer.instanceNullable();
         if (worldRenderer != null) {
-            if (taskList != null) {
-                ((SodiumWorldRendererExtension) worldRenderer).veil$setTaskLists((Map<TaskQueueType, ArrayDeque<RenderSection>>) taskList);
-            } else {
-                Map<TaskQueueType, ArrayDeque<RenderSection>> taskLists = new EnumMap<>(TaskQueueType.class);
-                for (TaskQueueType type : TaskQueueType.values()) {
-                    taskLists.put(type, new ArrayDeque<>());
-                }
-                ((SodiumWorldRendererExtension) worldRenderer).veil$setTaskLists(taskLists);
-            }
+            Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists = taskList != null ? (Map<ChunkUpdateType, ArrayDeque<RenderSection>>) taskList : createEmptyRebuildLists();
+            ((SodiumWorldRendererExtension) worldRenderer).veil$setRebuildLists(rebuildLists);
         }
     }
 }

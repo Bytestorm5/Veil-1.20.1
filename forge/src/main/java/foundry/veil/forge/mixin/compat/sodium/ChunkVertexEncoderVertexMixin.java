@@ -1,11 +1,11 @@
 package foundry.veil.forge.mixin.compat.sodium;
 
 import foundry.veil.ext.sodium.ChunkVertexEncoderVertexExtension;
-import net.caffeinemc.mods.sodium.client.render.chunk.vertex.format.ChunkVertexEncoder;
+import me.jellysquid.mods.sodium.client.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(ChunkVertexEncoder.Vertex.class)
+@Mixin(value = ChunkVertexEncoder.Vertex.class, remap = false)
 public class ChunkVertexEncoderVertexMixin implements ChunkVertexEncoderVertexExtension {
 
     @Unique

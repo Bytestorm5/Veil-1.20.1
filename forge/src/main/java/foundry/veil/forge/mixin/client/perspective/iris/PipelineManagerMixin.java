@@ -7,10 +7,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(PipelineManager.class)
+@Mixin(value = PipelineManager.class, remap = false)
 public class PipelineManagerMixin {
 
-    @ModifyVariable(method = "preparePipeline", at = @At("HEAD"), argsOnly = true, remap = false)
+    @ModifyVariable(method = "preparePipeline", at = @At("HEAD"), argsOnly = true)
     public NamespacedId modifyPipeline(NamespacedId value) {
         if (VeilLevelPerspectiveRenderer.isRenderingPerspective()) {
             return new NamespacedId(value.getNamespace(), "veil_perspective_" + value.getName());

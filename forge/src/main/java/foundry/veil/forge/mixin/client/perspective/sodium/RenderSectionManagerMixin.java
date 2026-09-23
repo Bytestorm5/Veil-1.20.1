@@ -3,21 +3,19 @@ package foundry.veil.forge.mixin.client.perspective.sodium;
 import foundry.veil.api.client.render.VeilLevelPerspectiveRenderer;
 import foundry.veil.forge.ext.RenderSectionExtension;
 import foundry.veil.forge.mixinhelper.PerspectiveChunkCollector;
-import net.caffeinemc.mods.sodium.client.SodiumClientMod;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
-import net.caffeinemc.mods.sodium.client.render.chunk.TaskQueueType;
-import net.caffeinemc.mods.sodium.client.render.chunk.lists.SectionCollector;
-import net.caffeinemc.mods.sodium.client.render.chunk.occlusion.OcclusionCuller;
-import net.caffeinemc.mods.sodium.client.render.chunk.translucent_sorting.SortBehavior;
-import net.caffeinemc.mods.sodium.client.render.viewport.Viewport;
+import me.jellysquid.mods.sodium.client.render.chunk.ChunkUpdateType;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionManager;
+import me.jellysquid.mods.sodium.client.render.chunk.lists.SortedRenderLists;
+import me.jellysquid.mods.sodium.client.render.chunk.occlusion.OcclusionCuller;
+import me.jellysquid.mods.sodium.client.render.viewport.Viewport;
 import net.minecraft.client.Camera;
-import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayDeque;
@@ -27,7 +25,10 @@ import java.util.Map;
 public abstract class RenderSectionManagerMixin {
 
     @Shadow
-    private @NotNull Map<TaskQueueType, ArrayDeque<RenderSection>> taskLists;
+    private Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists;
+
+    @Shadow
+    private SortedRenderLists renderLists;
 
     @Shadow
     @Final
@@ -45,35 +46,23 @@ public abstract class RenderSectionManagerMixin {
     @Shadow
     protected abstract RenderSection getRenderSection(int x, int y, int z);
 
-    @Shadow
-    @Final
-    private SortBehavior sortBehavior;
-
-    @Shadow
-    private SectionCollector sectionCollector;
-
-    @Shadow
-    private SectionCollector lastSectionCollector;
-
     @Inject(method = "createTerrainRenderList", at = @At("HEAD"), cancellable = true)
-    private void createTerrainRenderList(Camera camera, Viewport viewport, int frame, boolean spectator, CallbackInfoReturnable<Boolean> cir) {
+    private void createTerrainRenderList(Camera camera, Viewport viewport, int frame, boolean spectator, CallbackInfo ci) {
         if (!VeilLevelPerspectiveRenderer.isRenderingPerspective()) {
             return;
         }
 
+        ci.cancel();
         this.resetRenderLists();
+
         float searchDistance = this.getSearchDistance();
         boolean useOcclusionCulling = this.shouldUseOcclusionCulling(camera, spectator);
-        TaskQueueType importantRebuildQueueType = SodiumClientMod.options().performance.chunkBuildDeferMode.getImportantRebuildQueueType();
-        TaskQueueType importantSortQueueType = this.sortBehavior.getDeferMode().getImportantRebuildQueueType();
 
-        SectionCollector visitor = new PerspectiveChunkCollector(importantRebuildQueueType, importantSortQueueType);
+        PerspectiveChunkCollector visitor = new PerspectiveChunkCollector();
         this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);
-        this.sectionCollector = visitor;
 
-        this.lastSectionCollector = null;
-        this.taskLists = this.sectionCollector.getTaskLists();
-        cir.setReturnValue(this.sectionCollector.needsRevisitForPendingUpdates());
+        this.renderLists = visitor.createRenderLists();
+        this.rebuildLists = visitor.getRebuildLists();
     }
 
     @Inject(method = "isSectionVisible", at = @At("HEAD"), cancellable = true)

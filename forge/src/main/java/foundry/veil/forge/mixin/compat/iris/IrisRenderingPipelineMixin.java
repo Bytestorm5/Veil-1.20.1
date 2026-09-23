@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(IrisRenderingPipeline.class)
+@Mixin(value = IrisRenderingPipeline.class, remap = false)
 public class IrisRenderingPipelineMixin implements IrisRenderingPipelineExtension {
 
     @Shadow
@@ -40,7 +40,7 @@ public class IrisRenderingPipelineMixin implements IrisRenderingPipelineExtensio
         this.veil$simpleFbo.bind(false);
     }
 
-    @Inject(method = "destroy", at = @At("TAIL"), remap = false)
+    @Inject(method = "destroy", at = @At("TAIL"))
     public void destroy(CallbackInfo ci) {
         if (this.veil$simpleFbo != null) {
             this.veil$simpleFbo.free();

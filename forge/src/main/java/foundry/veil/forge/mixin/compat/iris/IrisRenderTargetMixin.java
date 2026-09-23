@@ -3,40 +3,44 @@ package foundry.veil.forge.mixin.compat.iris;
 import foundry.veil.api.client.render.framebuffer.FramebufferAttachmentDefinition;
 import foundry.veil.ext.iris.IrisRenderTargetExtension;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
-import net.irisshaders.iris.gl.texture.PixelType;
 import net.irisshaders.iris.targets.RenderTarget;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(RenderTarget.class)
+@Mixin(value = RenderTarget.class, remap = false)
 public abstract class IrisRenderTargetMixin implements IrisRenderTargetExtension {
 
-    @Shadow(remap = false)
-    private String name;
+    // Oculus only keeps the name on the builder, so capture it when the target is created
+    @Unique
+    private String veil$name;
 
-    @Shadow(remap = false)
+    @Shadow
     public abstract int getMainTexture();
 
-    @Shadow(remap = false)
+    @Shadow
     public abstract int getAltTexture();
 
-    @Shadow(remap = false)
+    @Shadow
     public abstract int getWidth();
 
-    @Shadow(remap = false)
+    @Shadow
     public abstract int getHeight();
 
     @Shadow
     public abstract InternalTextureFormat getInternalFormat();
 
-    @Shadow
-    @Final
-    private PixelType type;
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void captureName(RenderTarget.Builder builder, CallbackInfo ci) {
+        this.veil$name = ((IrisRenderTargetBuilderAccessor) builder).getName();
+    }
 
     @Override
     public String veil$getName() {
-        return this.name;
+        return this.veil$name;
     }
 
     @Override
@@ -111,15 +115,12 @@ public abstract class IrisRenderTargetMixin implements IrisRenderTargetExtension
             case RG32UI -> FramebufferAttachmentDefinition.Format.RG32UI;
             case RGB32UI -> FramebufferAttachmentDefinition.Format.RGB32UI;
             case RGBA32UI -> FramebufferAttachmentDefinition.Format.RGBA32UI;
-            case RGBA2 -> FramebufferAttachmentDefinition.Format.RGBA2;
-            case RGBA4 -> FramebufferAttachmentDefinition.Format.RGBA4;
             case R3_G3_B2 -> FramebufferAttachmentDefinition.Format.R3_G3_B2;
             case RGB5_A1 -> FramebufferAttachmentDefinition.Format.RGB5_A1;
-            case RGB565 -> FramebufferAttachmentDefinition.Format.RGB565;
             case RGB10_A2 -> FramebufferAttachmentDefinition.Format.RGB10_A2;
-            case RGB10_A2UI -> FramebufferAttachmentDefinition.Format.RGB10_A2UI;
             case R11F_G11F_B10F -> FramebufferAttachmentDefinition.Format.R11F_G11F_B10F;
             case RGB9_E5 -> FramebufferAttachmentDefinition.Format.RGB9_E5;
+            default -> FramebufferAttachmentDefinition.Format.RGBA8;
         };
     }
 }

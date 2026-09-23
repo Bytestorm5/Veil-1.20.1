@@ -11,10 +11,11 @@ import foundry.veil.forge.ext.ShaderChunkRendererExtension;
 import foundry.veil.impl.ThreadTaskScheduler;
 import foundry.veil.impl.client.render.shader.processor.SodiumShaderProcessor;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.caffeinemc.mods.sodium.client.gl.shader.*;
-import net.caffeinemc.mods.sodium.client.render.chunk.ShaderChunkRenderer;
-import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
-import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderOptions;
+import me.jellysquid.mods.sodium.client.gl.device.CommandList;
+import me.jellysquid.mods.sodium.client.gl.shader.*;
+import me.jellysquid.mods.sodium.client.render.chunk.ShaderChunkRenderer;
+import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
+import me.jellysquid.mods.sodium.client.render.chunk.shader.ChunkShaderOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.opengl.GL;
@@ -33,25 +34,22 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 @SuppressWarnings("ConstantValue")
-@Mixin(ShaderChunkRenderer.class)
+@Mixin(value = ShaderChunkRenderer.class, remap = false)
 public abstract class ShaderChunkRendererMixin implements ShaderChunkRendererExtension {
 
-    @Shadow(remap = false)
+    @Shadow
     @Final
     private Map<ChunkShaderOptions, GlProgram<ChunkShaderInterface>> programs;
 
-    @Shadow(remap = false)
-    protected abstract GlProgram<ChunkShaderInterface> createShader(String path, ChunkShaderOptions options);
-
     @Shadow
-    private static ShaderConstants createShaderConstants(ChunkShaderOptions options) {
-        throw new UnsupportedOperationException("Implemented via mixin");
+    private GlProgram<ChunkShaderInterface> createShader(String path, ChunkShaderOptions options) {
+        throw new AssertionError();
     }
 
     @Unique
     private ThreadTaskScheduler veil$scheduler;
     @Unique
-    private Map<ShaderType, ShaderParser.ParsedShader> veil$shaderSource;
+    private Map<ShaderType, String> veil$shaderSource;
     @Unique
     private int veil$activeBuffers;
 
@@ -63,23 +61,23 @@ public abstract class ShaderChunkRendererMixin implements ShaderChunkRendererExt
             new ResourceLocation("sodium", "blocks/block_layer_opaque.fsh")
     );
 
-    @Inject(method = "delete", at = @At("HEAD"), remap = false)
-    public void delete(CallbackInfo ci) {
+    @Inject(method = "delete", at = @At("HEAD"))
+    public void delete(CommandList commandList, CallbackInfo ci) {
         if (this.veil$scheduler != null) {
             this.veil$scheduler.cancel();
         }
         this.veil$activeBuffers = 0;
     }
 
-    @Inject(method = "compileProgram", at = @At("HEAD"), remap = false)
+    @Inject(method = "compileProgram", at = @At("HEAD"))
     public void updateActiveProgram(ChunkShaderOptions options, CallbackInfoReturnable<GlProgram<ChunkShaderInterface>> cir) {
         ((ChunkShaderOptionsExtension) (Object) options).veil$setActiveBuffers(this.veil$activeBuffers);
     }
 
-    @WrapOperation(method = "createShader", at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/gl/shader/ShaderLoader;loadShader(Lnet/caffeinemc/mods/sodium/client/gl/shader/ShaderType;Lnet/minecraft/resources/ResourceLocation;Lnet/caffeinemc/mods/sodium/client/gl/shader/ShaderConstants;)Lnet/caffeinemc/mods/sodium/client/gl/shader/GlShader;", remap = true), require = 2, remap = false)
+    @WrapOperation(method = "createShader", at = @At(value = "INVOKE", target = "Lme/jellysquid/mods/sodium/client/gl/shader/ShaderLoader;loadShader(Lme/jellysquid/mods/sodium/client/gl/shader/ShaderType;Lnet/minecraft/resources/ResourceLocation;Lme/jellysquid/mods/sodium/client/gl/shader/ShaderConstants;)Lme/jellysquid/mods/sodium/client/gl/shader/GlShader;"), require = 2)
     private GlShader createShader(ShaderType type, ResourceLocation name, ShaderConstants constants, Operation<GlShader> original) {
         if (this.veil$shaderSource != null) {
-            ShaderParser.ParsedShader source = this.veil$shaderSource.get(type);
+            String source = this.veil$shaderSource.get(type);
             if (source != null) {
                 return new GlShader(type, name, source);
             }
@@ -96,18 +94,18 @@ public abstract class ShaderChunkRendererMixin implements ShaderChunkRendererExt
         int shaderCount = keys.size();
         Stopwatch stopwatch = Stopwatch.createStarted();
         GLCapabilities glCapabilities = GL.getCapabilities();
-
         this.veil$scheduler = new ThreadTaskScheduler("VeilSodiumShaderCompile", 1, () -> {
             Pair<ChunkShaderOptions, ShaderConstants> pair = keys.poll();
             if (pair == null) {
                 return null;
             }
+
             return () -> {
-                Map<ShaderType, ShaderParser.ParsedShader> map = new Object2ObjectArrayMap<>();
+                Map<ShaderType, String> map = new Object2ObjectArrayMap<>();
                 for (Map.Entry<ShaderType, ResourceLocation> entry : SHADERS.entrySet()) {
                     ShaderType type = entry.getKey();
                     SodiumShaderProcessor.setShaderType(type.id, entry.getValue(), glCapabilities);
-                    ShaderParser.ParsedShader src = ShaderParser.parseShader(ShaderLoader.getShaderSource(entry.getValue()), pair.getSecond());
+                    String src = ShaderParser.parseShader(ShaderLoader.getShaderSource(entry.getValue()), pair.getSecond());
                     map.put(type, src);
                 }
 
@@ -143,10 +141,11 @@ public abstract class ShaderChunkRendererMixin implements ShaderChunkRendererExt
                     break;
                 }
             }
+
             if (unique) {
                 ChunkShaderOptions options = new ChunkShaderOptions(key.fog(), key.pass(), key.vertexType());
                 ((ChunkShaderOptionsExtension) (Object) options).veil$setActiveBuffers(activeBuffers);
-                keys.add(Pair.of(options, createShaderConstants(options)));
+                keys.add(Pair.of(options, options.constants()));
             }
         }
         return keys;

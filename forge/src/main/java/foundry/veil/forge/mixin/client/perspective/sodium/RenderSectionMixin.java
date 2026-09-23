@@ -2,14 +2,14 @@ package foundry.veil.forge.mixin.client.perspective.sodium;
 
 import foundry.veil.api.client.render.VeilLevelPerspectiveRenderer;
 import foundry.veil.forge.ext.RenderSectionExtension;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(RenderSection.class)
+@Mixin(value = RenderSection.class, remap = false)
 public class RenderSectionMixin implements RenderSectionExtension {
 
     @Unique
@@ -33,7 +33,7 @@ public class RenderSectionMixin implements RenderSectionExtension {
         this.veil$incomingDirections |= directions;
     }
 
-    @Inject(method = "getIncomingDirections", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "getIncomingDirections", at = @At("HEAD"), cancellable = true)
     public void getIncomingDirections(CallbackInfoReturnable<Integer> cir) {
         if (VeilLevelPerspectiveRenderer.isRenderingPerspective()) {
             cir.setReturnValue(this.veil$incomingDirections);

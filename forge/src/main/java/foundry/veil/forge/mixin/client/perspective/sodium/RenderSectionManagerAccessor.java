@@ -1,24 +1,24 @@
 package foundry.veil.forge.mixin.client.perspective.sodium;
 
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSectionManager;
-import net.caffeinemc.mods.sodium.client.render.chunk.TaskQueueType;
-import net.caffeinemc.mods.sodium.client.render.chunk.lists.SortedRenderLists;
+import me.jellysquid.mods.sodium.client.render.chunk.ChunkUpdateType;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSectionManager;
+import me.jellysquid.mods.sodium.client.render.chunk.lists.SortedRenderLists;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.ArrayDeque;
 import java.util.Map;
 
-@Mixin(RenderSectionManager.class)
+@Mixin(value = RenderSectionManager.class, remap = false)
 public interface RenderSectionManagerAccessor {
 
-    @Accessor(remap = false)
-    Map<TaskQueueType, ArrayDeque<RenderSection>> getTaskLists();
+    @Accessor
+    Map<ChunkUpdateType, ArrayDeque<RenderSection>> getRebuildLists();
 
-    @Accessor(remap = false)
+    @Accessor
     void setRenderLists(SortedRenderLists renderLists);
 
-    @Accessor(remap = false)
-    void setTaskLists(Map<TaskQueueType, ArrayDeque<RenderSection>> taskLists);
+    @Accessor
+    void setRebuildLists(Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists);
 }

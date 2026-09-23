@@ -14,10 +14,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Optional;
 
-@Mixin(ShaderProgramImpl.Wrapper.class)
+/**
+ * {@link ShaderProgramImpl.Wrapper} lives in common, so the annotation processor cannot map its {@code ShaderInstance}
+ * overrides. Both the development name and the SRG name used after reobfuscation are targeted directly instead.
+ */
+@Mixin(value = ShaderProgramImpl.Wrapper.class, remap = false)
 public class ShaderWrapperMixin {
 
-    @Inject(method = "apply", at = @At("TAIL"))
+    @Inject(method = {"apply", "m_173363_"}, at = @At("TAIL"))
     public void apply(CallbackInfo ci, @Share("drawn") LocalBooleanRef drawnRef) {
         Optional<WorldRenderingPipeline> pipelineOptional = Iris.getPipelineManager().getPipeline();
         if (pipelineOptional.isEmpty() || !(pipelineOptional.get() instanceof IrisRenderingPipelineExtension extension)) {
@@ -28,7 +32,7 @@ public class ShaderWrapperMixin {
         extension.veil$bindSimpleFramebuffer();
     }
 
-    @Inject(method = "clear", at = @At("TAIL"))
+    @Inject(method = {"clear", "m_173362_"}, at = @At("TAIL"))
     public void clear(CallbackInfo ci, @Share("drawn") LocalBooleanRef drawnRef) {
         if (drawnRef.get()) {
             AdvancedFbo.unbind();

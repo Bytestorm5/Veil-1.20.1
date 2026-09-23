@@ -49,16 +49,11 @@ public class SodiumShaderPreProcessor implements ShaderPreProcessor {
 
             switch (type) {
                 case ALBEDO -> {
-                    if (ctx.isVertex()) {
-                        treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression("out vec4 PassVeilVertexColor"));
-                        mainBody.add(GlslParser.parseExpression("PassVeilVertexColor = _vert_color"));
-                        modified = true;
-                    }
-
                     if (ctx.isFragment()) {
-                        treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression("in vec4 PassVeilVertexColor"));
+                        // Embeddium applies the vertex color and AO shade to "diffuseColor" differently depending on its
+                        // color format, so capture it right before fog is applied (the last statement in main)
                         treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression(output));
-                        mainBody.add(1, GlslParser.parseExpression(sourceName + " = texture(u_BlockTex, v_TexCoord, lodBias) * PassVeilVertexColor"));
+                        mainBody.add(Math.max(0, mainBody.size() - 1), GlslParser.parseExpression(sourceName + " = diffuseColor"));
                         modified = true;
                     }
                 }
@@ -82,7 +77,7 @@ public class SodiumShaderPreProcessor implements ShaderPreProcessor {
                 case LIGHT_UV -> {
                     if (ctx.isVertex()) {
                         treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression("out vec2 PassVeilLightUV"));
-                        mainBody.add(GlslParser.parseExpression("PassVeilLightUV = _vert_tex_light_coord"));
+                        mainBody.add(GlslParser.parseExpression("PassVeilLightUV = clamp(vec2(_vert_tex_light_coord) / 256.0, vec2(0.5 / 16.0), vec2(15.5 / 16.0))"));
                         modified = true;
                     }
 
@@ -96,7 +91,7 @@ public class SodiumShaderPreProcessor implements ShaderPreProcessor {
                 case LIGHT_COLOR -> {
                     if (ctx.isVertex()) {
                         treeBody.add(GlslInjectionPoint.BEFORE_MAIN, GlslParser.parseExpression("out vec3 PassVeilLightColor"));
-                        mainBody.add(GlslParser.parseExpression("PassVeilLightColor = texture(u_LightTex, _vert_tex_light_coord).rgb"));
+                        mainBody.add(GlslParser.parseExpression("PassVeilLightColor = texture(u_LightTex, clamp(vec2(_vert_tex_light_coord) / 256.0, vec2(0.5 / 16.0), vec2(15.5 / 16.0))).rgb"));
                         modified = true;
                     }
 

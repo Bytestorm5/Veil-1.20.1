@@ -1,8 +1,8 @@
 package foundry.veil.forge.ext;
 
-import net.caffeinemc.mods.sodium.client.render.chunk.RenderSection;
-import net.caffeinemc.mods.sodium.client.render.chunk.TaskQueueType;
-import net.caffeinemc.mods.sodium.client.render.chunk.lists.SortedRenderLists;
+import me.jellysquid.mods.sodium.client.render.chunk.RenderSection;
+import me.jellysquid.mods.sodium.client.render.chunk.ChunkUpdateType;
+import me.jellysquid.mods.sodium.client.render.chunk.lists.SortedRenderLists;
 
 import java.util.ArrayDeque;
 import java.util.Map;
@@ -11,9 +11,9 @@ public interface SodiumWorldRendererExtension {
 
     SortedRenderLists veil$getSortedRenderLists();
 
-    Map<TaskQueueType, ArrayDeque<RenderSection>> veil$getTaskLists();
+    Map<ChunkUpdateType, ArrayDeque<RenderSection>> veil$getRebuildLists();
 
     void veil$setSortedRenderLists(SortedRenderLists sortedRenderLists);
 
-    void veil$setTaskLists(Map<TaskQueueType, ArrayDeque<RenderSection>> taskLists);
+    void veil$setRebuildLists(Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists);
 }

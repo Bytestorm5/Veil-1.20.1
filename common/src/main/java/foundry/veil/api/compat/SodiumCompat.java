@@ -19,7 +19,7 @@ public interface SodiumCompat {
      * Retrieves the compat instance. This will be <code>null</code> if sodium is not installed.
      */
     @Nullable
-    SodiumCompat INSTANCE = Veil.platform().isModLoaded("sodium") ? ServiceLoader.load(SodiumCompat.class).findFirst().orElse(null) : null;
+    SodiumCompat INSTANCE = Veil.SODIUM ? ServiceLoader.load(SodiumCompat.class).findFirst().orElse(null) : null;
 
     /**
      * @return Whether Sodium is loaded
