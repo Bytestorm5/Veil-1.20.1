@@ -17,21 +17,6 @@ public abstract class PipelinePoseStackMixin implements MatrixStack {
     private static final Matrix3f veil$IDENTITY_NORMAL = new Matrix3f();
 
     @Shadow
-    public abstract void shadow$scale(float x, float y, float z);
-
-    @Shadow
-    public abstract void shadow$mulPose(Quaternionf quaternion);
-
-    @Shadow
-    public abstract void shadow$rotateAround(Quaternionf quaternion, float x, float y, float z);
-
-    @Shadow
-    public abstract void shadow$pushPose();
-
-    @Shadow
-    public abstract void shadow$popPose();
-
-    @Shadow
     @Final
     private Deque<PoseStack.Pose> poseStack;
 
@@ -44,7 +29,7 @@ public abstract class PipelinePoseStackMixin implements MatrixStack {
     @Override
     public void clear() {
         while (this.poseStack.size() > 1) {
-            this.shadow$popPose();
+            ((PoseStack) (Object) this).popPose();
         }
         this.setIdentity();
     }
@@ -56,42 +41,42 @@ public abstract class PipelinePoseStackMixin implements MatrixStack {
 
     @Override
     public void rotate(Quaterniondc rotation) {
-        this.shadow$mulPose(this.veil$castQuat.set(rotation));
+        ((PoseStack) (Object) this).mulPose(this.veil$castQuat.set(rotation));
     }
 
     @Override
     public void rotate(Quaternionfc rotation) {
-        this.shadow$mulPose(this.veil$castQuat.set(rotation));
+        ((PoseStack) (Object) this).mulPose(this.veil$castQuat.set(rotation));
     }
 
     @Override
     public void rotate(float angle, float x, float y, float z) {
-        this.shadow$mulPose(this.veil$castQuat.identity().rotateAxis(angle, x, y, z));
+        ((PoseStack) (Object) this).mulPose(this.veil$castQuat.identity().rotateAxis(angle, x, y, z));
     }
 
     @Override
     public void rotateXYZ(float x, float y, float z) {
-        this.shadow$mulPose(this.veil$castQuat.identity().rotateXYZ(x, y, z));
+        ((PoseStack) (Object) this).mulPose(this.veil$castQuat.identity().rotateXYZ(x, y, z));
     }
 
     @Override
     public void rotateZYX(float z, float y, float x) {
-        this.shadow$mulPose(this.veil$castQuat.identity().rotateZYX(z, y, x));
+        ((PoseStack) (Object) this).mulPose(this.veil$castQuat.identity().rotateZYX(z, y, x));
     }
 
     @Override
     public void rotateAround(Quaterniondc rotation, double x, double y, double z) {
-        this.shadow$rotateAround(this.veil$castQuat.set(rotation), (float) x, (float) y, (float) z);
+        ((PoseStack) (Object) this).rotateAround(this.veil$castQuat.set(rotation), (float) x, (float) y, (float) z);
     }
 
     @Override
     public void rotateAround(Quaternionfc rotation, float x, float y, float z) {
-        this.shadow$rotateAround(this.veil$castQuat.set(rotation), x, y, z);
+        ((PoseStack) (Object) this).rotateAround(this.veil$castQuat.set(rotation), x, y, z);
     }
 
     @Override
     public void applyScale(float x, float y, float z) {
-        this.shadow$scale(x, y, z);
+        ((PoseStack) (Object) this).scale(x, y, z);
     }
 
     @Override
@@ -107,12 +92,12 @@ public abstract class PipelinePoseStackMixin implements MatrixStack {
 
     @Override
     public void matrixPush() {
-        this.shadow$pushPose();
+        ((PoseStack) (Object) this).pushPose();
     }
 
     @Override
     public void matrixPop() {
-        this.shadow$popPose();
+        ((PoseStack) (Object) this).popPose();
     }
 
     @Override
