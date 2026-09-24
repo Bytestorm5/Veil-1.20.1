@@ -1,19 +1,26 @@
 package foundry.veil.impl.client.render;
 
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.core.Direction;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -21,6 +28,12 @@ import java.util.List;
  */
 @ApiStatus.Internal
 public final class BackportRenderHelper {
+
+    private static final Direction[] DIRECTIONS = Direction.values();
+    private static final String[] FACE_BRIGHTNESS_UNIFORM_NAMES = Arrays.stream(DIRECTIONS)
+            .map(direction -> "VeilBlockFaceBrightness[" + direction.get3DDataValue() + "]")
+            .toArray(String[]::new);
+    private static final Matrix3f NORMAL_MATRIX = new Matrix3f();
 
     private BackportRenderHelper() {
     }
@@ -76,6 +89,36 @@ public final class BackportRenderHelper {
         }
 
         RenderSystem.setupShaderLights(shader);
+        setVeilDefaultUniforms(shader, modelViewMatrix);
+    }
+
+    /**
+     * Sets the extra default uniforms Veil adds to every shader: <code>VeilRenderTime</code>, <code>NormalMat</code> and
+     * <code>VeilBlockFaceBrightness</code>. On 1.21 these are set at the end of {@code ShaderInstance#setDefaultUniforms}.
+     *
+     * @param shader          The shader to set uniforms on
+     * @param modelViewMatrix The model view matrix the shader will render with
+     */
+    public static void setVeilDefaultUniforms(ShaderInstance shader, Matrix4fc modelViewMatrix) {
+        Uniform renderTime = shader.getUniform("VeilRenderTime");
+        if (renderTime != null) {
+            renderTime.set((System.currentTimeMillis() % 3_600_000) / 1000.0F);
+        }
+
+        Uniform normalMat = shader.getUniform("NormalMat");
+        if (normalMat != null) {
+            normalMat.set(modelViewMatrix.normal(NORMAL_MATRIX));
+        }
+
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != null) {
+            for (Direction direction : DIRECTIONS) {
+                Uniform uniform = shader.getUniform(FACE_BRIGHTNESS_UNIFORM_NAMES[direction.ordinal()]);
+                if (uniform != null) {
+                    uniform.set(level.getShade(direction, true));
+                }
+            }
+        }
     }
 
     /**

@@ -5,6 +5,7 @@ import foundry.veil.impl.client.render.BackportRenderHelper;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Shader;
 import com.mojang.blaze3d.shaders.Uniform;
@@ -633,6 +634,9 @@ public class ShaderProgramImpl implements ShaderProgram {
 
         @Override
         public void apply() {
+            // ShaderInstance#apply is overridden, so Veil's extra default uniforms have to be set here
+            Matrix4fc modelViewMatrix = this.MODEL_VIEW_MATRIX instanceof UniformWrapper wrapper && wrapper.lastMatrix4x4 != null ? wrapper.lastMatrix4x4 : RenderSystem.getModelViewMatrix();
+            BackportRenderHelper.setVeilDefaultUniforms(this, modelViewMatrix);
             this.program.bind();
             this.program.bindSamplers(0);
         }
@@ -703,6 +707,8 @@ public class ShaderProgramImpl implements ShaderProgram {
         private static final Matrix4f MAT4X4 = new Matrix4f();
 
         private final Supplier<ShaderUniform> uniform;
+        // The last 4x4 matrix set, so the wrapper can derive the normal matrix from the model view matrix
+        private Matrix4f lastMatrix4x4;
 
         @SuppressWarnings("DataFlowIssue")
         public UniformWrapper(String name, Supplier<ShaderUniform> uniform) {
@@ -884,6 +890,14 @@ public class ShaderProgramImpl implements ShaderProgram {
                 float m33
         ) {
             this.getUniform().setMatrix(MAT4X4.set(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33), false);
+            this.rememberMatrix(MAT4X4);
+        }
+
+        private void rememberMatrix(Matrix4fc value) {
+            if (this.lastMatrix4x4 == null) {
+                this.lastMatrix4x4 = new Matrix4f();
+            }
+            this.lastMatrix4x4.set(value);
         }
 
         @Override
@@ -894,6 +908,7 @@ public class ShaderProgramImpl implements ShaderProgram {
         @Override
         public void set(@NotNull Matrix4f value) {
             this.getUniform().setMatrix(value, false);
+            this.rememberMatrix(value);
         }
 
         @Override

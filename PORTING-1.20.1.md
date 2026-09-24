@@ -78,8 +78,12 @@ clients or servers without the mod can still connect. Handlers run on the main t
 
 - The GUI sprite atlas (1.20.2+) doesn't exist. Texture hot reloading checks the mob effect and painting atlases instead.
 - `NativeImage` doesn't validate PNG headers on 1.20.1, so the mixin that disabled that check was removed.
-- There is no `ShaderInstance#setDefaultUniforms`. The equivalent lives in `BackportRenderHelper.setDefaultUniforms`,
-  and Veil's extra default uniforms (`VeilRenderTime`, `NormalMat`, `VeilBlockFaceBrightness`) are set when a shader is applied.
+- There is no `ShaderInstance#setDefaultUniforms`. The equivalent lives in `BackportRenderHelper.setDefaultUniforms`.
+  Veil's extra default uniforms (`VeilRenderTime`, `NormalMat`, `VeilBlockFaceBrightness`) are set by
+  `BackportRenderHelper.setVeilDefaultUniforms`, which runs when a vanilla shader or a Veil program's `ShaderInstance`
+  wrapper is applied, and from `ShaderProgram#setDefaultUniforms`.
+- `Uniform#set(Matrix3f)` and `set(Matrix4f)` are `final` in vanilla 1.20.1. Veil's access transformer removes `final`
+  so the uniform wrappers of Veil programs (`VeilRenderBridge.toShaderInstance`) forward them like every other setter.
 - Chunk rendering is retargeted from `SectionRenderDispatcher` to `ChunkRenderDispatcher.RenderChunk` and
   `LevelRenderer#renderChunkLayer`, including the level perspective renderer's occlusion graph.
 
