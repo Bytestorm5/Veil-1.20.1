@@ -92,6 +92,10 @@ clients or servers without the mod can still connect. Handlers run on the main t
 - Sodium and Iris compatibility targets **Embeddium 0.3.31** and **Oculus 1.8.0**, the Forge 1.20.1 forks. `SodiumCompat` and
   `IrisCompat` keep their public API. Embeddium's terrain vertex format gains a 4-byte normal (24-byte stride) the
   same way Veil extends Sodium's format on 1.21.
+- Custom block layers are added to Forge's `ChunkRenderTypeSet` once they are registered, so `ChunkRenderTypeSet.of(...)`,
+  `all()`, `union` and `intersection` include them even if the class was initialized earlier. With Embeddium, which
+  replaces the set with a lookup table sized at class init, the table is resized too. Embeddium supports at most 8
+  chunk layers (5 vanilla + 3 custom).
 - ImGuiMC has no 1.20.1 build, so the ImGui editor is compiled but inactive unless an ImGuiMC port is installed.
 
 ## Verification

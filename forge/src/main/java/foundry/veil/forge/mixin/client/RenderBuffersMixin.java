@@ -3,6 +3,7 @@ package foundry.veil.forge.mixin.client;
 import foundry.veil.Veil;
 import foundry.veil.api.client.render.rendertype.VeilRenderType;
 import foundry.veil.forge.event.ForgeVeilRegisterBlockLayersEvent;
+import foundry.veil.forge.impl.ForgeChunkRenderTypeSetSync;
 import foundry.veil.forge.impl.ForgeRenderTypeStageHandler;
 import net.minecraft.client.renderer.ChunkBufferBuilderPack;
 import net.minecraft.client.renderer.RenderBuffers;
@@ -30,6 +31,7 @@ public class RenderBuffersMixin {
             blockLayers.add(renderType);
         }));
         ForgeRenderTypeStageHandler.setBlockLayers(blockLayers);
+        ForgeChunkRenderTypeSetSync.sync();
         return new ChunkBufferBuilderPack();
     }
 }

@@ -12,6 +12,7 @@
     "resources.ForgePathPackResourcesMixin"
   ],
   "client": [
+    "client.ChunkRenderTypeSetAccessor",
     "client.ForgeRenderTypeAccessor",
     "client.MinecraftMixin",
     "client.RenderBuffersMixin",
