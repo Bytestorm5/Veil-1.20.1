@@ -10,6 +10,7 @@ import foundry.veil.impl.client.render.shader.program.ShaderProgramImpl;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import org.lwjgl.opengl.GL31C;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.Final;
@@ -130,6 +131,11 @@ public abstract class ShaderInstanceMixin implements Shader {
                 }
 
                 if (this.uniformMap.containsKey(name) || this.samplerNames.contains(name)) {
+                    continue;
+                }
+
+                // Uniform block members have no location and are set through their block's buffer
+                if (GL31C.glGetActiveUniformsi(this.programId, i, GL31C.GL_UNIFORM_BLOCK_INDEX) != -1) {
                     continue;
                 }
 
