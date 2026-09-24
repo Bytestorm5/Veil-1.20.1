@@ -148,19 +148,20 @@ public abstract class ShaderInstanceMixin implements Shader {
                 int minecraftType;
                 int minecraftCount;
                 switch (dataType) {
-                    case GL_INT -> {
+                    // Bool uniforms are set with glUniform*i
+                    case GL_INT, GL_BOOL -> {
                         minecraftType = Uniform.UT_INT1;
                         minecraftCount = 1;
                     }
-                    case GL_INT_VEC2 -> {
+                    case GL_INT_VEC2, GL_BOOL_VEC2 -> {
                         minecraftType = Uniform.UT_INT2;
                         minecraftCount = 2;
                     }
-                    case GL_INT_VEC3 -> {
+                    case GL_INT_VEC3, GL_BOOL_VEC3 -> {
                         minecraftType = Uniform.UT_INT3;
                         minecraftCount = 3;
                     }
-                    case GL_INT_VEC4 -> {
+                    case GL_INT_VEC4, GL_BOOL_VEC4 -> {
                         minecraftType = Uniform.UT_INT4;
                         minecraftCount = 4;
                     }
@@ -193,7 +194,8 @@ public abstract class ShaderInstanceMixin implements Shader {
                         minecraftCount = 16;
                     }
                     default -> {
-                        Veil.LOGGER.error("Unsupported Uniform Type: {}", typeName);
+                        // Shader packs and other mods use types vanilla uniforms can't represent, which they set themselves
+                        Veil.LOGGER.debug("Shader {} has uniform {} with unsupported type: {}", this.name, name, typeName);
                         continue;
                     }
                 }
